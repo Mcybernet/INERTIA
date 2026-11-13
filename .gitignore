@@ -1,0 +1,27 @@
+# Rust / Anchor build output
+target/
+.anchor/
+test-ledger/
+**/*.rs.bk
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Environment & secrets — never commit keypairs or API keys
+.env
+.env.*
+*.key
+*.pem
+keypair*.json
+keys/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
