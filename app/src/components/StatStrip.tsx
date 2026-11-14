@@ -73,9 +73,11 @@ export function StatStrip({ snapshot }: { snapshot: PoolSnapshot | null }) {
         sub={`supply ${fmtTokenInt(SUPPLY_RAW)} INRT`}
       />
       <Cell
-        label="Likuiditas"
+        label="Likuiditas (2 sisi)"
         value={`${fmtSolNumber(liquidity)} SOL`}
-        sub={`${fmtSolLamports(solReserve)} SOL di pool`}
+        sub={`${fmtSolLamports(solReserve)} SOL + ${fmtTokenInt(
+          snapshot.tokenReserve,
+        )} INRT`}
       />
       <Cell
         label="Mass Reserve"
