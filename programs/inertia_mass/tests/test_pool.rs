@@ -93,11 +93,24 @@ struct Env {
 // ---------------------------------------------------------------- helpers
 
 fn send(svm: &mut LiteSVM, ixs: &[Instruction], signers: &[&Keypair]) -> TransactionResult {
-    let blockhash = svm.latest_blockhash();
-    let fee_payer = signers[0].pubkey();
-    let msg = Message::new_with_blockhash(ixs, Some(&fee_payer), &blockhash);
-    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), signers).unwrap();
-    svm.send_transaction(tx)
+    let attempt = |svm: &mut LiteSVM| -> TransactionResult {
+        let blockhash = svm.latest_blockhash();
+        let fee_payer = signers[0].pubkey();
+        let msg = Message::new_with_blockhash(ixs, Some(&fee_payer), &blockhash);
+        let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), signers).unwrap();
+        svm.send_transaction(tx)
+    };
+
+    match attempt(svm) {
+        // Beberapa guard test sengaja mengirim instruksi yang identik dua kali.
+        // Dengan blockhash yang sama, runtime menolaknya sebagai AlreadyProcessed
+        // sebelum program berjalan; pakai blockhash baru supaya guard-nya teruji.
+        Err(e) if format!("{:?}", e.err).contains("AlreadyProcessed") => {
+            svm.expire_blockhash();
+            attempt(svm)
+        }
+        res => res,
+    }
 }
 
 fn send_ok(svm: &mut LiteSVM, ixs: &[Instruction], signers: &[&Keypair]) {
@@ -150,7 +163,8 @@ fn assert_err(res: TransactionResult, name: &str) {
             let logs = format!("{:?}", e.meta.logs);
             assert!(
                 logs.contains(name),
-                "error yang diharapkan {name}, logs: {logs}"
+                "error yang diharapkan {name}, err: {:?}, logs: {logs}",
+                e.err
             );
         }
     }
@@ -678,12 +692,13 @@ fn buy_then_sell_round_trip() {
         RENT_EXEMPT_MIN + fee + sell_fee
     );
 
-    // I9: k tidak boleh turun lebih dari toleransi pembulatan.
+    // I9: pembulatan selalu menguntungkan pool, jadi `k` tidak boleh turun;
+    // kenaikannya hanya sisa pembulatan (harus < 1 ppm).
     let k_before = POOL_TOKENS as u128 * POOL_SOL as u128;
     let k_after = after.token_reserve as u128 * after.sol_reserve as u128;
-    assert!(k_after <= k_before);
-    let loss_ppm = (k_before - k_after) * 1_000_000 / k_before;
-    assert!(loss_ppm < 1, "k turun {loss_ppm} ppm");
+    assert!(k_after >= k_before, "k turun: {k_after} < {k_before}");
+    let gain_ppm = (k_after - k_before) * 1_000_000 / k_before;
+    assert!(gain_ppm < 1, "k naik {gain_ppm} ppm, di luar toleransi pembulatan");
 }
 
 #[test]
@@ -998,7 +1013,7 @@ fn fuzz_math_10000_iterations() {
 
     let mut token = POOL_TOKENS;
     let mut sol = POOL_SOL;
-    let mut worst_loss_ppm = 0u128;
+    let mut worst_gain_ppm = 0u128;
 
     for i in 0..10_000u64 {
         let direction = next() % 2;
@@ -1025,12 +1040,14 @@ fn fuzz_math_10000_iterations() {
         }
 
         let k_after = token as u128 * sol as u128;
-        assert!(k_after <= k_before, "iter {i}: k naik (mustahil)");
-        let loss_ppm = (k_before - k_after) * 1_000_000 / k_before;
-        if loss_ppm > worst_loss_ppm {
-            worst_loss_ppm = loss_ppm;
+        // Pembulatan floor pada output selalu menyisakan nilai di pool: `k`
+        // tidak boleh turun, dan kenaikannya hanya sisa pembulatan (< 1 ppm).
+        assert!(k_after >= k_before, "iter {i}: k turun");
+        let gain_ppm = (k_after - k_before) * 1_000_000 / k_before;
+        if gain_ppm > worst_gain_ppm {
+            worst_gain_ppm = gain_ppm;
         }
-        assert!(loss_ppm <= 1, "iter {i}: k turun {loss_ppm} ppm");
+        assert!(gain_ppm <= 1, "iter {i}: k naik {gain_ppm} ppm");
         assert!(token > 0 && sol > 0);
     }
 
