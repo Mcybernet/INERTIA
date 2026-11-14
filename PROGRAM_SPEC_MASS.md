@@ -1,6 +1,6 @@
 # Program Spec — The Mass (INERTIA)
 
-> **Status:** DRAFT v1.1 — siap diterjemahkan ke Anchor.
+> **Status:** v1.3 — kode Anchor + CLI Devnet (`tools/devnet`) sudah ditulis, `cargo check` hijau; menunggu build SBF lalu test LiteSVM dijalankan.
 > **Tanggal:** 2026-11-14
 > **Program:** pool constant-product tanpa curve, tanpa instruksi penarikan.
 > **Terkait:** `TOKENOMICS_INERTIA.md` (angka), `IDENTITY_INERTIA.md` (brand), `NEXT_PROJECT_POOL_LAUNCH.md` (playbook).
@@ -94,21 +94,25 @@ Ukuran setelah discriminator 8 byte:
 | 192 | `token_reserve` | u64 | 8 |
 | 200 | `sol_reserve` | u64 | 8 |
 | 208 | `fee_bps` | u16 | 2 |
-| 210 | `launch_slot` | u64 | 8 |
-| 218 | `launch_ts` | i64 | 8 |
-| 226 | `last_mass_ts` | i64 | 8 |
-| 234 | `total_mass_sol` | u64 | 8 |
-| 242 | `total_mass_token` | u64 | 8 |
-| 250 | `seeded` | bool | 1 |
-| 251 | `bump` | u8 | 1 |
-| 252 | `vault_auth_bump` | u8 | 1 |
-| 253 | `padding` | [u8; 3] | 3 |
+| 210 | `seeded` | bool | 1 |
+| 211 | `bump` | u8 | 1 |
+| 212 | `vault_auth_bump` | u8 | 1 |
+| 213 | `reserve_auth_bump` | u8 | 1 |
+| 214 | `padding` | [u8; 2] | 2 |
+| 216 | `launch_slot` | u64 | 8 |
+| 224 | `launch_ts` | i64 | 8 |
+| 232 | `last_mass_ts` | i64 | 8 |
+| 240 | `total_mass_sol` | u64 | 8 |
+| 248 | `total_mass_token` | u64 | 8 |
+| 256 | `mass_interval` | i64 | 8 |
 
-`SPACE = 8 + 256 = 264` byte.
+`SPACE = 8 + 264 = 272` byte.
 
 Catatan:
 
 - `authority` disimpan untuk transparansi dan ditampilkan di UI. **Tidak ada instruksi yang membacanya untuk otorisasi.**
+- `mass_interval` disimpan per pool (bukan konstanta global) supaya Devnet bisa memakai interval 60 detik tanpa mengubah layout di kemudian hari.
+- `reserve_auth_bump` disimpan karena `add_mass` harus menandatangani transfer dari `mass_reserve_vault`; bump `sol_vault`/`fee_vault` diambil dari `ctx.bumps` saat runtime, tidak perlu disimpan.
 - `token_reserve` dan `sol_reserve` adalah sumber kebenaran. Saldo vault diverifikasi, bukan dijadikan sumber utama, supaya donasi ke vault tidak menggeser harga secara tak terduga.
 - `padding` disediakan agar penambahan field kecil tidak mengubah ukuran akun.
 
@@ -118,7 +122,7 @@ Catatan:
 
 ### 5.1 `initialize_pool`
 
-**Args:** `fee_bps: u16`
+**Args:** `fee_bps: u16`, `mass_interval: i64`
 
 **Akun:**
 
@@ -135,9 +139,9 @@ Catatan:
 | `fee_vault` | writable | PDA `["fee_vault", pool]`, system-owned, 0 data |
 | `system_program`, `token_program`, `associated_token_program` | readonly | — |
 
-**Validasi:** `fee_bps <= MAX_FEE_BPS`, `mint.decimals == 6`, semua PDA cocok.
+**Validasi:** `fee_bps <= MAX_FEE_BPS`, `mass_interval > 0`, `mint.decimals == 6`, semua PDA cocok.
 
-**Efek:** buat `PoolState`, ATA, dan dua akun system. Isi `authority`, `mint`, alamat vault, `fee_bps`, `seeded = false`, `last_mass_ts = 0`, bump. `sol_vault` dan `fee_vault` didanai `RENT_EXEMPT_MIN` oleh `authority` agar valid sebagai akun system — ini bukan dana pool dan tidak dihitung sebagai reserve.
+**Efek:** buat `PoolState`, ATA, dan dua akun system. Isi `authority`, `mint`, alamat vault, `fee_bps`, `mass_interval`, `seeded = false`, `last_mass_ts = 0`, bump. `sol_vault` dan `fee_vault` didanai `RENT_EXEMPT_MIN` oleh `authority` agar valid sebagai akun system — ini bukan dana pool dan tidak dihitung sebagai reserve.
 
 **Event:** `PoolInitialized`.
 
@@ -155,7 +159,8 @@ Catatan:
 | `pool` | writable | `seeded == false` |
 | `mint` | readonly | Sama dengan `pool.mint` |
 | `authority_token_account` | writable | Milik `authority`, mint sama |
-| `token_vault` | writable | Sama dengan `pool.token_vault` |
+| `token_vault` | writable | Sama dengan `pool.token_vault`, owner `vault_authority` |
+| `vault_authority` | readonly | PDA `["vault_auth", pool]` (cek owner vault) |
 | `sol_vault` | writable | Sama dengan `pool.sol_vault`, system-owned |
 | `token_program`, `system_program` | readonly | — |
 
@@ -165,7 +170,7 @@ Catatan:
 - `token_amount > 0`, `sol_amount > 0`
 - `authority_token_account.amount >= token_amount`
 - `authority` punya lamports cukup
-- Setelah transfer: `token_vault.amount == token_amount` dan `sol_vault.lamports == sol_amount + RENT_EXEMPT_MIN`
+- Setelah transfer: `sol_vault.lamports >= sol_amount + RENT_EXEMPT_MIN`. Saldo token vault tidak dibandingkan ulang; jika transfer token gagal, CPI token program sudah menggagalkan transaksi.
 
 **Efek:** transfer token dan SOL, set `token_reserve`, `sol_reserve`, `launch_slot = Clock.slot`, `launch_ts = Clock.unix_timestamp`, `last_mass_ts = Clock.unix_timestamp`, `seeded = true`.
 
@@ -263,7 +268,7 @@ now           = Clock.unix_timestamp
 claimable     = fee_vault.lamports - RENT_EXEMPT_MIN
 mass_balance  = mass_reserve_vault.amount
 
-require now - last_mass_ts >= MASS_INTERVAL_SECONDS
+require now - last_mass_ts >= pool.mass_interval
 require amount_sol >= MIN_MASS_SOL
 require amount_sol <= claimable
 
@@ -290,7 +295,7 @@ Karena pembulatan memakai `ceil`, harga boleh bergeser turun sangat sedikit — 
 
 **Catatan keamanan:** `amount_sol` tidak boleh melebihi `claimable`. Siapa pun **bisa** mentransfer SOL langsung ke `fee_vault` — akun system bisa menerima lamports tanpa izin. Donasi itu terhitung sebagai massa pada `add_mass` berikutnya. Ini tidak berbahaya (hanya memperdalam pool, tidak memberi keuntungan langsung ke pendonasi) dan berguna untuk menguji `add_mass` di Devnet. Yang tidak ada di v1 adalah instruksi untuk menambah likuiditas langsung ke `sol_vault`/`token_vault` di luar rasio.
 
-**Catatan pengujian Devnet:** dengan fee 0,3%, butuh volume ±333 SOL untuk mengumpulkan 1 SOL fee. Untuk menguji `add_mass`, kirim 1 SOL langsung ke `fee_vault`. Interval 7 hari tetap berlaku; lihat §14 untuk opsi menjadikannya parameter init.
+**Catatan pengujian Devnet:** dengan fee 0,3%, butuh volume ±333 SOL untuk mengumpulkan 1 SOL fee. Untuk menguji `add_mass`, kirim 1 SOL langsung ke `fee_vault`. Interval diambil dari `pool.mass_interval` yang ditetapkan saat `initialize_pool`; pool uji Devnet memakai 60 detik, sedangkan konfigurasi realistis memakai 7 hari.
 
 ---
 
@@ -334,6 +339,7 @@ pub struct PoolInitialized {
     pub mint: Pubkey,
     pub authority: Pubkey,
     pub fee_bps: u16,
+    pub mass_interval: i64,
     pub timestamp: i64,
 }
 
@@ -379,6 +385,12 @@ pub struct MassAdded {
 
 Bentuk ini sengaja dekat dengan `ActivityRecord` yang sudah dipakai frontend KALYTH, supaya parser, candle builder, dan halaman Activity bisa dipakai ulang dengan perubahan minimal.
 
+`sol_user` + `fee` + `token_amount` sudah cukup untuk Activity tanpa field tambahan:
+
+- beli: `token_amount` = token diterima, `sol_user` = SOL dibayar (termasuk fee), `fee` = porsi fee.
+- jual: `token_amount` = token dijual, `sol_user` = SOL diterima (setelah fee), `fee` = porsi fee.
+- harga eksekusi rata-rata bisa dihitung di frontend: `sol_user / token_amount` (per arah), sedangkan `price_after` tetap harga reserve untuk candle.
+
 Aturan parser:
 
 - `PoolSeeded` → marker, **bukan** candle.
@@ -394,9 +406,11 @@ Aturan parser:
 #[error_code]
 pub enum MassError {
     #[msg("fee_bps melebihi batas")]            InvalidFeeBps,
+    #[msg("interval add_mass tidak valid")]     InvalidInterval,
     #[msg("pool sudah di-seed")]                AlreadySeeded,
     #[msg("pool belum di-seed")]                NotSeeded,
     #[msg("jumlah tidak boleh nol")]            ZeroAmount,
+    #[msg("saldo token tidak cukup")]           InsufficientTokenAmount,
     #[msg("output di bawah minimum")]           SlippageExceeded,
     #[msg("transaksi kedaluwarsa")]             DeadlinePassed,
     #[msg("fee vault tidak cukup")]             InsufficientFeeVault,
@@ -411,6 +425,8 @@ pub enum MassError {
     #[msg("desimal mint bukan 6")]              InvalidMintDecimals,
 }
 ```
+
+Urutan variant mengikuti `programs/inertia_mass/src/error.rs`; frontend memetakan berdasarkan nama, bukan offset.
 
 Tidak ada error `Unauthorized` karena tidak ada instruksi ber-otorisasi.
 
@@ -484,7 +500,7 @@ Yang **tidak** dilindungi desain:
 | Parameter | Nilai |
 |---|---|
 | Network | Devnet |
-| Program | `nebula_mass` (nama kerja) |
+| Program | `inertia_mass` |
 | Mint decimals | 6 |
 | Total supply | 50.000.000 |
 | Token seed | 9.600.000 |
@@ -493,7 +509,7 @@ Yang **tidak** dilindungi desain:
 | Fee | 30 bps |
 | Upgrade authority | Dev key — disimpan (Devnet only) |
 | Batas beli | Tidak ada |
-| Interval `add_mass` | 7 hari |
+| Interval `add_mass` | 60 detik saat uji Devnet, 7 hari untuk konfigurasi realistis (argumen `initialize_pool`) |
 | Cap `add_mass` | 5% reserve (dikunci) |
 
 Fase pengujian:
@@ -531,7 +547,7 @@ Yang tidak boleh berubah antar fase: **layout `PoolState`**.
 | 19 | `add_mass` dipanggil wallet acak | Sukses (permissionless) |
 | 20 | Serangan: kirim vault palsu | `InvalidVault` |
 | 21 | Serangan: donasi ke `sol_vault` | Harga tidak berubah |
-| 22 | Cek ukuran `PoolState` | 264 byte |
+| 22 | Cek ukuran `PoolState` | 272 byte |
 | 23 | Fuzz beli/jual acak 10.000 iterasi | Tidak ada overflow, `k` tidak turun di luar toleransi |
 | 24 | Replay event ke parser frontend | Candle kontinu, seed bukan candle |
 | 25 | Revoke mint authority lalu swap | Tetap sukses |
@@ -545,8 +561,54 @@ Test 18 dan 23 wajib memakai properti, bukan hanya contoh tetap.
 - [x] **Upgrade authority:** dev key disimpan selama Devnet.
 - [x] **Cap Mass Reserve:** 5% (`MASS_CAP_BPS = 500`).
 - [x] **Mainnet:** di luar scope.
-- [ ] **Diskon fee berbasis tier (v1.1):** menambah pembacaan saldo di `swap`; belum masuk v1.
-- [ ] **Nama program on-chain:** `nebula_mass`, `inertia_mass`, atau lain.
-- [ ] **Apakah `sol_user` dan `fee` cukup untuk Activity**, atau perlu field tambahan untuk UI.
-- [ ] **Interval `add_mass`:** hardcode 7 hari, atau jadikan parameter `initialize_pool` supaya Devnet bisa 60 detik?
+- [x] **Diskon fee berbasis tier (v1.1):** menunda ke v1.1; tidak masuk v1.
+- [x] **Nama program on-chain:** `inertia_mass`.
+- [x] **Apakah `sol_user` dan `fee` cukup untuk Activity:** cukup. `sol_user` = SOL dibayar (beli) atau diterima (jual), `fee` = porsi fee, `token_amount` = token keluar/masuk; harga eksekusi rata-rata dihitung di frontend.
+- [x] **Interval `add_mass`:** parameter `initialize_pool` (Devnet 60 detik, realistis 7 hari).
 - [ ] **Tanggal seed Devnet:** TBD — bukan public launch.
+
+---
+
+## 15. Status implementasi
+
+Kode program: `programs/inertia_mass/src/`
+
+| File | Isi |
+|---|---|
+| `lib.rs` | empat instruksi + `declare_id!` |
+| `state.rs` | `PoolState` 272 byte, `Direction`, seed konstanta |
+| `constants.rs` | fee, interval default, `MIN_MASS_SOL`, cap 5%, toleransi 50 bps, `RENT_EXEMPT_MIN` |
+| `error.rs` | `MassError` |
+| `events.rs` | 4 event |
+| `math.rs` | `quote_buy`, `quote_sell`, `mass_token_needed`, `price_drift_bps` + unit test |
+| `instructions/*.rs` | handler dan `Accounts` untuk 4 instruksi |
+
+CLI Devnet: `tools/devnet/src/main.rs` (workspace terpisah karena pin Agave
+`solana-client 4.3.0` vs `litesvm 0.18.2`). Perintah `status`, `init`, `seed`,
+`buy`, `sell`, `add-mass`; dipakai untuk rehearsal `solana-test-validator` dan
+eksekusi Devnet.
+
+Test LiteSVM: `programs/inertia_mass/tests/test_pool.rs`
+
+| Matrix §13 | Test | Status |
+|---:|---|---|
+| 1, 22 | `pool_state_size_is_272` | ditulis |
+| 2, 3 | `init_rejects_bad_fee_and_decimals` | ditulis |
+| 4 | `seed_sets_reserves_and_price` | ditulis |
+| 5, 6 | `seed_twice_fails_and_zero_fails` | ditulis |
+| 7 | `swap_before_seed_fails` | ditulis |
+| 8, 11 | `buy_then_sell_round_trip` | ditulis |
+| 9, 10 | `swap_guards_slippage_and_deadline` | ditulis |
+| 14, 15 | `add_mass_requires_interval_and_fee` | ditulis |
+| 18, 19 | `add_mass_success_is_permissionless_and_keeps_price` | ditulis |
+| 16, 17 | `add_mass_respects_cap_and_max_token_in` | ditulis |
+| 20 | `fake_vault_is_rejected` | ditulis |
+| 21 | `donation_to_sol_vault_does_not_move_price` | ditulis |
+| 12, 13 | `sell_more_than_balance_fails`, `sell_slippage_and_sell_guards` | ditulis |
+| 23 | `fuzz_math_10000_iterations` | ditulis |
+| 24 | `events_replay_like_frontend_parser` | ditulis |
+| 25 | `revoke_mint_authority_then_swap_still_works` | ditulis |
+
+Semua test di atas belum dieksekusi; status "ditulis" berarti kode ada, bukan lulus.
+Dependensi test: `litesvm 0.18.2` (bukan 0.15 — konflik `solana-account` 4 vs 5),
+`base64 0.22`, `sha2 0.10` untuk parser event yang meniru klien.

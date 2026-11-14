@@ -1,0 +1,33 @@
+[package]
+name = "inertia-devnet"
+version = "0.1.0"
+description = "CLI Devnet INERTIA: init pool, seed likuiditas, swap smoke test, add_mass"
+edition = "2021"
+rust-version = "1.97.0"
+publish = false
+
+# Workspace terpisah: solana-rpc-client 4.3.0 mem-pin Agave 4.3.x, sedangkan
+# litesvm (dev-dep program) mem-pin Agave 4.3.2. Pin `=` Agave membuat keduanya
+# tidak bisa satu lockfile, jadi crate ini punya workspace sendiri.
+[workspace]
+
+[[bin]]
+name = "inertia-devnet"
+path = "src/main.rs"
+
+[dependencies]
+inertia_mass = { path = "../../programs/inertia_mass", features = ["no-entrypoint"] }
+anchor-lang = "1.2.2"
+# Hanya RPC client (bukan solana-client) agar tidak menarik solana-net-utils/brotli.
+# Pin `=` supaya tipe solana-message/transaction tetap 4.x seperti anchor.
+solana-rpc-client = "=4.3.0"
+solana-commitment-config = "3.1"
+solana-keypair = "3"
+solana-message = "4"
+solana-signer = "3"
+solana-transaction = "4"
+
+# Pin bantu resolusi offline: yoke 0.8.4 butuh yoke-derive 0.8.4, sementara
+# yoke-derive 0.8.3 sudah di-yank di index sehingga resolver gagal memilih.
+yoke = "=0.8.4"
+yoke-derive = "=0.8.4"

@@ -1,0 +1,23 @@
+skip_local_validator = true
+
+[toolchain]
+anchor_version = "1.2.2"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+inertia_mass = "8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o"
+
+[programs.devnet]
+inertia_mass = "8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/keys/inrt-devnet-payer.json"
+
+[scripts]
+test = "cargo test"
+
+[hooks]
