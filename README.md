@@ -21,7 +21,7 @@ Tidak ada instruksi tarik likuiditas, tidak ada LP token, tidak ada burn.
 ```
 programs/inertia_mass/      program Anchor (lib.rs, state, math, instructions)
 programs/inertia_mass/tests/test_pool.rs   test LiteSVM (in-process)
-tools/devnet/               CLI Rust `inertia-devnet` (init/seed/swap/status)
+tools/devnet/               CLI Rust `inertia-devnet` (init/seed/swap/reserve/status)
 scripts/devnet.sh           wrapper build/deploy/mint/init/seed + guard Devnet
 target/deploy/              hasil build (di-gitignore)
 ```
@@ -66,8 +66,15 @@ bash scripts/devnet.sh seed <MINT> 48 9600000
 bash scripts/devnet.sh status <MINT>
 bash scripts/devnet.sh buy  <MINT> 0.5
 bash scripts/devnet.sh sell <MINT> 1000
-bash scripts/devnet.sh add-mass <MINT> 1
+bash scripts/devnet.sh reserve <MINT> 10000000  # isi Mass Reserve (vault milik PDA)
+bash scripts/devnet.sh add-mass <MINT> 1        # butuh fee_vault >= 1 SOL + rent
 ```
+
+`add_mass` hanya bisa jalan kalau dua syarat terpenuhi: Mass Reserve berisi
+token (isi dengan `reserve`) dan `fee_vault` punya minimal
+`MIN_MASS_SOL` (1 SOL) di atas rent. Di Devnet volumenya kecil, jadi fee vault
+bisa disimulasikan dengan transfer SOL biasa ke alamat `fee_vault` yang
+dicetak `status`.
 
 Opsi seed (dipilih setelah biaya deploy diketahui):
 

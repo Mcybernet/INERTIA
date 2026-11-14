@@ -585,8 +585,12 @@ Kode program: `programs/inertia_mass/src/`
 
 CLI Devnet: `tools/devnet/src/main.rs` (workspace terpisah karena pin Agave
 `solana-client 4.3.0` vs `litesvm 0.18.2`). Perintah `status`, `init`, `seed`,
-`buy`, `sell`, `add-mass`; dipakai untuk rehearsal `solana-test-validator` dan
-eksekusi Devnet.
+`buy`, `sell`, `reserve`, `add-mass`; dipakai untuk rehearsal
+`solana-test-validator` dan eksekusi Devnet.
+
+`reserve` mengisi `mass_reserve_vault` dengan transfer SPL dari ATA penandatangan.
+`init` hanya membuat ATA kosong, jadi Mass Reserve harus didanai eksplisit
+sebelum `add_mass` bisa memakai tokennya.
 
 Test LiteSVM: `programs/inertia_mass/tests/test_pool.rs`
 
@@ -609,6 +613,7 @@ Test LiteSVM: `programs/inertia_mass/tests/test_pool.rs`
 | 24 | `events_replay_like_frontend_parser` | ditulis |
 | 25 | `revoke_mint_authority_then_swap_still_works` | ditulis |
 
-Semua test di atas belum dieksekusi; status "ditulis" berarti kode ada, bukan lulus.
+Hasil eksekusi: `cargo test --workspace` **24/24 lulus** (7 unit + 17
+integrasi), termasuk fuzz 10.000 iterasi dan replay event.
 Dependensi test: `litesvm 0.18.2` (bukan 0.15 — konflik `solana-account` 4 vs 5),
 `base64 0.22`, `sha2 0.10` untuk parser event yang meniru klien.

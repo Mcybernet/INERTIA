@@ -91,8 +91,38 @@ INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh status "$MINT"
 echo "== sell 1000 INRT =="
 INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh sell "$MINT" 1000
 
-echo "== add-mass 0.05 SOL (harus gagal: interval) =="
-INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh add-mass "$MINT" 0.05 || echo "gagal seperti diharapkan (interval belum lewat)"
+echo "== add-mass 0.05 SOL (harus gagal: di bawah MIN_MASS_SOL) =="
+INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh add-mass "$MINT" 0.05 || echo "gagal seperti diharapkan (minimum 1 SOL)"
+
+echo "== reserve 10000000 INRT ke Mass Reserve =="
+INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh reserve "$MINT" 10000000
+
+echo "== status =="
+INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh status "$MINT" | tee /tmp/rehearsal_before_mass.log
+FEE_VAULT="$(awk '/^fee_vault/{print $NF}' /tmp/rehearsal_before_mass.log)"
+echo "fee_vault: $FEE_VAULT"
+
+echo "== simulasi fee: transfer 2 SOL ke fee_vault =="
+solana transfer "$FEE_VAULT" 2 --url "$RPC" --keypair "$KEYPAIR" \
+  --allow-unfunded-recipient --commitment confirmed
+
+echo "== tunggu interval (${MASS_INTERVAL:-60} detik) =="
+sleep "${MASS_INTERVAL:-60}"
+sleep 5
+
+echo "== add-mass 1 SOL (harus sukses, harga tetap) =="
+INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh add-mass "$MINT" 1
+
+echo "== add-mass lagi (harus gagal: interval belum lewat) =="
+INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh add-mass "$MINT" 1 || echo "gagal seperti diharapkan (interval belum lewat)"
 
 echo "== selesai =="
-INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh status "$MINT"
+INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" scripts/devnet.sh status "$MINT" | tee /tmp/rehearsal_after_mass.log
+
+P0="$(awk '/^price/{print $3}' /tmp/rehearsal_before_mass.log)"
+P1="$(awk '/^price/{print $3}' /tmp/rehearsal_after_mass.log)"
+echo "drift harga add_mass: $P0 -> $P1"
+awk -v a="$P0" -v b="$P1" 'BEGIN {
+  d = (a > b) ? a - b : b - a;
+  printf "drift: %d bps (batas 50 bps)\n", int((d * 10000 + a - 1) / a)
+}'

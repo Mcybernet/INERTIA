@@ -12,6 +12,7 @@
 #   scripts/devnet.sh status <MINT>
 #   scripts/devnet.sh buy <MINT> <SOL>
 #   scripts/devnet.sh sell <MINT> <TOKEN>
+#   scripts/devnet.sh reserve <MINT> <TOKEN>   # isi Mass Reserve dari ATA payer
 #   scripts/devnet.sh add-mass <MINT> <SOL>
 #   scripts/devnet.sh set-authority   # upgrade authority program -> INERTIA_OWNER
 #   scripts/devnet.sh wallets         # tampilkan payer + owner + saldo
@@ -63,13 +64,21 @@ case "${1:-}" in
       echo "keypair mint sudah ada: $MINT_KEYPAIR" >&2
       exit 1
     fi
+    # spl-token hanya menerima keypair yang sudah ada sebagai argumen posisional,
+    # jadi keypair mint dibuat dulu di path yang kita kontrol.
+    solana-keygen new --no-bip39-passphrase --silent --outfile "$MINT_KEYPAIR" >/dev/null
     MINT_AUTH="$(solana address --keypair "$KEYPAIR")"
     spl-token create-token --url "$RPC" --fee-payer "$KEYPAIR" \
       --mint-authority "$MINT_AUTH" --decimals 6 "$MINT_KEYPAIR"
     MINT="$(solana-keygen pubkey "$MINT_KEYPAIR")"
-    spl-token create-account --url "$RPC" --fee-payer "$KEYPAIR" "$MINT"
-    spl-token mint --url "$RPC" --fee-payer "$KEYPAIR" "$MINT" "$SUPPLY"
-    spl-token authorize --url "$RPC" --fee-payer "$KEYPAIR" "$MINT" mint --disable
+    spl-token create-account --url "$RPC" --fee-payer "$KEYPAIR" --owner "$MINT_AUTH" "$MINT"
+    spl-token mint --url "$RPC" --fee-payer "$KEYPAIR" --mint-authority "$KEYPAIR" \
+      --recipient-owner "$MINT_AUTH" "$MINT" "$SUPPLY"
+    spl-token authorize --url "$RPC" --fee-payer "$KEYPAIR" --authority "$KEYPAIR" \
+      "$MINT" mint --disable
+    echo
+    echo "saldo ATA payer:"
+    spl-token balance --url "$RPC" --owner "$MINT_AUTH" "$MINT"
     echo
     echo "MINT=$MINT"
     echo "Simpan pubkey di atas untuk init/seed. Supply: $SUPPLY token."
@@ -92,6 +101,10 @@ case "${1:-}" in
   sell)
     INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" \
       "${TOOL[@]}" sell --mint "${2:?mint}" --token "${3:?token}"
+    ;;
+  reserve)
+    INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" \
+      "${TOOL[@]}" reserve --mint "${2:?mint}" --token "${3:?token}"
     ;;
   add-mass)
     INERTIA_RPC="$RPC" INERTIA_KEYPAIR="$KEYPAIR" \

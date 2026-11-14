@@ -6,6 +6,7 @@
 //!   seed     --mint <PUBKEY> --sol 48 --token 9600000
 //!   buy      --mint <PUBKEY> --sol 0.5 [--slippage-bps 100]
 //!   sell     --mint <PUBKEY> --token 1000 [--slippage-bps 100]
+//!   reserve  --mint <PUBKEY> --token 10000000
 //!   add-mass --mint <PUBKEY> --sol 1 [--slippage-bps 100]
 //!
 //! Env: INERTIA_RPC (default https://api.devnet.solana.com),
@@ -16,7 +17,7 @@
 use {
     anchor_lang::{
         prelude::Pubkey,
-        solana_program::instruction::Instruction,
+        solana_program::instruction::{AccountMeta, Instruction},
         AccountDeserialize, InstructionData, ToAccountMetas,
     },
     inertia_mass::{
@@ -131,6 +132,7 @@ subcommand:
   seed       --mint <pubkey> --sol <SOL> --token <INRT>
   buy        --mint <pubkey> --sol <SOL> [--slippage-bps 50]
   sell       --mint <pubkey> --token <INRT> [--slippage-bps 50]
+  reserve    --mint <pubkey> --token <INRT>     # isi Mass Reserve dari ATA payer
   add-mass   --mint <pubkey> --sol <SOL> [--slippage-bps 50]
   help
 
@@ -203,6 +205,27 @@ fn now() -> i64 {
         .unwrap_or(0)
 }
 
+/// Instruksi SPL `Transfer` (tag 3 + amount u64 LE) tanpa menarik crate spl-token.
+fn spl_transfer_ix(
+    source: Pubkey,
+    destination: Pubkey,
+    authority: Pubkey,
+    amount: u64,
+) -> Instruction {
+    let mut data = Vec::with_capacity(9);
+    data.push(3u8);
+    data.extend_from_slice(&amount.to_le_bytes());
+    Instruction {
+        program_id: token_program(),
+        accounts: vec![
+            AccountMeta::new(source, false),
+            AccountMeta::new(destination, false),
+            AccountMeta::new_readonly(authority, true),
+        ],
+        data,
+    }
+}
+
 fn read_pool(client: &RpcClient, pool: &Pubkey) -> Res<PoolState> {
     let account = client.get_account(pool)?;
     let mut data = account.data.as_slice();
@@ -238,7 +261,7 @@ fn run() -> Res<()> {
 
     let cmd = positional
         .first()
-        .ok_or("subcommand: status|init|seed|buy|sell|add-mass")?
+        .ok_or("subcommand: status|init|seed|buy|sell|reserve|add-mass")?
         .as_str();
     let client = rpc();
     let payer = payer()?;
@@ -251,6 +274,7 @@ fn run() -> Res<()> {
         "seed" => cmd_seed(&client, &payer, &flags),
         "buy" => cmd_buy(&client, &payer, &flags),
         "sell" => cmd_sell(&client, &payer, &flags),
+        "reserve" => cmd_reserve(&client, &payer, &flags),
         "add-mass" => cmd_add_mass(&client, &payer, &flags),
         other => Err(format!("subcommand tidak dikenal: {other}").into()),
     }
@@ -412,6 +436,20 @@ fn cmd_sell(client: &RpcClient, payer: &Keypair, flags: &HashMap<String, String>
     send(client, payer, &[ix])
 }
 
+fn cmd_reserve(client: &RpcClient, payer: &Keypair, flags: &HashMap<String, String>) -> Res<()> {
+    let mint = mint_of(flags)?;
+    let amount = parse_units(&need(flags, "token")?, TOKEN_DECIMALS)?;
+    let p = pdas(&mint);
+    let source = ata(&payer.pubkey(), &mint);
+
+    println!("reserve: {} token", fmt_token(amount));
+    println!("dari   : {source}");
+    println!("ke     : {} (Mass Reserve)", p.mass_reserve_vault);
+
+    let ix = spl_transfer_ix(source, p.mass_reserve_vault, payer.pubkey(), amount);
+    send(client, payer, &[ix])
+}
+
 fn cmd_add_mass(client: &RpcClient, payer: &Keypair, flags: &HashMap<String, String>) -> Res<()> {
     let mint = mint_of(flags)?;
     let amount_sol = parse_units(&need(flags, "sol")?, SOL_DECIMALS)?;
@@ -482,14 +520,15 @@ fn cmd_status(client: &RpcClient, flags: &HashMap<String, String>) -> Res<()> {
         fmt_token(pool.total_mass_token)
     );
     println!("sol_vault    : {}", fmt_sol(sol_vault));
-    println!("fee_vault    : {}", fmt_sol(fee_vault));
+    println!("fee_vault    : {} @ {}", fmt_sol(fee_vault), p.fee_vault);
     println!(
         "token_vault  : {} token",
         fmt_token(token_balance(client, &p.token_vault).unwrap_or(0))
     );
     println!(
-        "reserve vault: {} token",
-        fmt_token(token_balance(client, &p.mass_reserve_vault).unwrap_or(0))
+        "reserve vault: {} token @ {}",
+        fmt_token(token_balance(client, &p.mass_reserve_vault).unwrap_or(0)),
+        p.mass_reserve_vault
     );
     Ok(())
 }
