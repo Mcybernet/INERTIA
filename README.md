@@ -45,6 +45,31 @@ Keypair mint: `~/.config/solana/keys/inrt-mint.json` (di luar git)
 - Private key tidak pernah diminta, ditampilkan, atau di-commit. Cek dengan
   `scripts/devnet.sh wallets`.
 
+## Devnet (live, 14 Nov 2026)
+
+| Item | Address / nilai |
+|---|---|
+| Program `inertia_mass` | `8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o` |
+| Upgrade authority | `86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C` |
+| Mint `INRT` (decimals 6, mint authority dicabut) | `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H` |
+| Pool | `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM` |
+| Token vault | `HcmXidwTkTGRFTvJAx4bCj7Ebs5gJZmJVNakvBnpPJff` |
+| SOL vault | `9ymSmLaEgas8329MWfLomRPEvpurxPsGCJLPYxqkcUcy` |
+| Fee vault | `4cU949bkmQquiVGpAgfFFTRmqoqpvT3ErYLSWtbbcREH` |
+| Mass Reserve vault | `nCbjXjTZbqj9GyJogUeaweh3K5MKWfYCKRGjatPMroH` |
+| ATA owner | `7b4cYnPTtxYsFe9Z4mUHPMZDBy6h3VvwPwaAME9Jq5ts` |
+| Harga awal | `0,000005 SOL/INRT` (FDV 250 SOL) |
+| Likuiditas | 4,8 SOL + 960.000 INRT |
+| Mass Reserve | 10.000.000 INRT |
+| Owner | 39.040.000 INRT |
+
+Seed memakai opsi C, jadi pool aktif hanya 960.000 dari alokasi pool 9,6 jt.
+Sisa **8,64 jt INRT** tidak masuk likuiditas (tidak ada top-up) dan ikut dikirim
+ke owner: 30,4 jt alokasi + 8,64 jt sisa pool = 39,04 jt. Tidak ada burn.
+`add_mass` di Devnet belum dijalankan karena `fee_vault` baru berisi
+0,000890880 SOL (butuh minimal 1 SOL); jalur ini sudah terbukti di rehearsal
+lokal (`scripts/rehearsal_local.sh`).
+
 ## Toolchain
 
 - Rust `1.100.0`, Anchor CLI `1.2.2`, Solana platform-tools `v1.57`
@@ -57,7 +82,7 @@ Keypair mint: `~/.config/solana/keys/inrt-mint.json` (di luar git)
 ```bash
 bash scripts/devnet.sh build          # anchor build -> target/deploy/inertia_mass.so
 bash scripts/devnet.sh wallets        # cek address + saldo payer/owner
-bash scripts/devnet.sh deploy         # anchor deploy --provider.cluster devnet
+bash scripts/devnet.sh deploy         # solana program deploy (keypair program eksplisit)
 bash scripts/devnet.sh set-authority  # upgrade authority program -> wallet owner
 bash scripts/devnet.sh balance
 bash scripts/devnet.sh mint 50000000  # supply 50 jt, decimals 6, mint authority dicabut

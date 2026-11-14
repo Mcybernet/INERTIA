@@ -519,11 +519,12 @@ fn cmd_status(client: &RpcClient, flags: &HashMap<String, String>) -> Res<()> {
         fmt_sol(pool.total_mass_sol),
         fmt_token(pool.total_mass_token)
     );
-    println!("sol_vault    : {}", fmt_sol(sol_vault));
+    println!("sol_vault    : {} @ {}", fmt_sol(sol_vault), p.sol_vault);
     println!("fee_vault    : {} @ {}", fmt_sol(fee_vault), p.fee_vault);
     println!(
-        "token_vault  : {} token",
-        fmt_token(token_balance(client, &p.token_vault).unwrap_or(0))
+        "token_vault  : {} token @ {}",
+        fmt_token(token_balance(client, &p.token_vault).unwrap_or(0)),
+        p.token_vault
     );
     println!(
         "reserve vault: {} token @ {}",

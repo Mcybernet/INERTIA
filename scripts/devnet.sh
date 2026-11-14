@@ -51,7 +51,14 @@ case "${1:-}" in
     ;;
   deploy)
     solana_cli balance
-    anchor deploy --provider.cluster "$RPC" --provider.wallet "$KEYPAIR"
+    # `anchor deploy` mencetak error "No such file or directory" setelah upload
+    # sukses (bug jalur buffer/IDL), jadi pakai CLI Solana langsung agar status
+    # deploy unambiguous. Keypair program eksplisit; upgrade memakai authority
+    # yang sama dengan `set-authority`.
+    solana program deploy target/deploy/inertia_mass.so \
+      --url "$RPC" --keypair "$KEYPAIR" \
+      --program-id "${INERTIA_PROGRAM_KEYPAIR:-$HOME/.config/solana/keys/inertia_mass_devnet.json}"
+    solana program show "$PROGRAM_ID" --url "$RPC" | head -8
     ;;
   balance)
     solana_cli balance

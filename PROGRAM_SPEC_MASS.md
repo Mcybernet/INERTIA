@@ -565,7 +565,10 @@ Test 18 dan 23 wajib memakai properti, bukan hanya contoh tetap.
 - [x] **Nama program on-chain:** `inertia_mass`.
 - [x] **Apakah `sol_user` dan `fee` cukup untuk Activity:** cukup. `sol_user` = SOL dibayar (beli) atau diterima (jual), `fee` = porsi fee, `token_amount` = token keluar/masuk; harga eksekusi rata-rata dihitung di frontend.
 - [x] **Interval `add_mass`:** parameter `initialize_pool` (Devnet 60 detik, realistis 7 hari).
-- [ ] **Tanggal seed Devnet:** TBD — bukan public launch.
+- [x] **Tanggal seed Devnet:** 14 Nov 2026 — pool
+  `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM`, mint
+  `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H`, harga awal
+  `0,000005 SOL/INRT`, 4,8 SOL + 960.000 INRT (opsi C). Bukan public launch.
 
 ---
 
@@ -591,6 +594,14 @@ CLI Devnet: `tools/devnet/src/main.rs` (workspace terpisah karena pin Agave
 `reserve` mengisi `mass_reserve_vault` dengan transfer SPL dari ATA penandatangan.
 `init` hanya membuat ATA kosong, jadi Mass Reserve harus didanai eksplisit
 sebelum `add_mass` bisa memakai tokennya.
+
+Deploy Devnet (14 Nov 2026): program `8nxgCR4…n86o` dengan upgrade authority
+`86RAJ…a24C`; mint `GEovdGG…RDE4H`; pool `HobKvgdz…dcPCM` berisi
+4,8 SOL + 960.000 INRT (harga `0,000005 SOL/INRT`); Mass Reserve 10.000.000
+INRT; owner 39.040.000 INRT (30,4 jt alokasi + 8,64 jt sisa alokasi pool opsi
+C yang tidak masuk likuiditas). `add_mass` Devnet belum dijalankan karena
+`fee_vault` baru 0,000890880 SOL (butuh ≥ 1 SOL); jalur ini sudah lulus di
+rehearsal lokal.
 
 Test LiteSVM: `programs/inertia_mass/tests/test_pool.rs`
 
