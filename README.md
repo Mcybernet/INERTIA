@@ -22,6 +22,7 @@ Tidak ada instruksi tarik likuiditas, tidak ada LP token, tidak ada burn.
 programs/inertia_mass/      program Anchor (lib.rs, state, math, instructions)
 programs/inertia_mass/tests/test_pool.rs   test LiteSVM (in-process)
 tools/devnet/               CLI Rust `inertia-devnet` (init/seed/swap/reserve/status)
+app/                        dashboard Next.js + wallet buy/sell (Devnet)
 scripts/devnet.sh           wrapper build/deploy/mint/init/seed + guard Devnet
 target/deploy/              hasil build (di-gitignore)
 ```
@@ -66,9 +67,31 @@ Keypair mint: `~/.config/solana/keys/inrt-mint.json` (di luar git)
 Seed memakai opsi C, jadi pool aktif hanya 960.000 dari alokasi pool 9,6 jt.
 Sisa **8,64 jt INRT** tidak masuk likuiditas (tidak ada top-up) dan ikut dikirim
 ke owner: 30,4 jt alokasi + 8,64 jt sisa pool = 39,04 jt. Tidak ada burn.
-`add_mass` di Devnet belum dijalankan karena `fee_vault` baru berisi
-0,000890880 SOL (butuh minimal 1 SOL); jalur ini sudah terbukti di rehearsal
-lokal (`scripts/rehearsal_local.sh`).
+`add_mass` di Devnet belum dijalankan karena `fee_vault` masih di bawah 1 SOL
+(saat ini ±0,001 SOL); jalur ini sudah terbukti di rehearsal lokal
+(`scripts/rehearsal_local.sh`).
+
+## Frontend (`app/`)
+
+Dashboard + trade wallet (Next.js 14, TypeScript, Tailwind, lightweight-charts,
+wallet adapter). Tema flat: radius 0, border tipis, aksen emas `#E0A64B`.
+
+```bash
+cd app
+npm install --legacy-peer-deps
+npm run dev      # http://localhost:3000
+npm run build    # validasi produksi
+```
+
+- Data lewat route internal `/api/pool`, `/api/history`, `/api/holders` dengan
+  cache pendek (RPC publik Devnet membatasi laju).
+- Transaksi `swap` dibangun di browser dan ditandatangani wallet pengguna;
+  app tidak pernah meminta private key/seed phrase.
+- `NEXT_PUBLIC_RPC_URL` boleh diisi RPC Devnet pribadi. Guard menolak endpoint
+  non-Devnet kecuali `INERTIA_ALLOW_NON_DEVNET=1`.
+- Mint authority sudah dicabut, jadi nama/simbol/logo di-hardcode di UI.
+- Tanpa `getTokenLargestAccounts` (sering 429 di RPC publik), tabel holder
+  memakai fallback: vault pool, Mass Reserve, owner, dan wallet dari event.
 
 ## Toolchain
 
