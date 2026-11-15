@@ -98,31 +98,46 @@ menunjuk mint/pool v1.
 
 ## Frontend (`app/`)
 
-Dashboard + trade wallet (Next.js 14, TypeScript, Tailwind, lightweight-charts,
-wallet adapter). Tema flat: radius 0, border tipis, aksen emas `#E0A64B`.
+Dashboard 7 halaman + trade wallet (Next.js 14, TypeScript, Tailwind,
+lightweight-charts, wallet adapter). Tema flat: radius 0, border tipis, aksen
+emas `#E0A64B`.
 
 Live: **https://mcybernet.github.io/INERTIA/**
+
+| Route | Isi |
+|---|---|
+| `/` | Overview: statistik pool, chart, aktivitas terbaru, panel trade |
+| `/trade` | Chart besar, beli/jual, posisi & riwayat wallet |
+| `/activity` | Semua event on-chain + filter + muat lebih |
+| `/mass` | Status Mass Reserve, fee vault, aturan `add_mass` |
+| `/holders` | Distribusi token account + tier |
+| `/tokenomics` | Alokasi, fee, vesting, kebijakan massa |
+| `/docs` | Panduan wallet/faucet, alamat on-chain, FAQ |
 
 ```bash
 cd app
 npm install --legacy-peer-deps
-npm run dev      # http://localhost:3000
-npm run build    # static export -> app/out
-npx serve out    # pratinjau hasil build
+npm run dev      # http://localhost:3000 (tanpa basePath)
+npm run build    # static export -> app/out (aset berprefix /INERTIA)
+npx serve out    # buka http://localhost:3000/INERTIA/
 ```
 
 - Situs statis: data pool/riwayat/holder dibaca langsung dari RPC Devnet di
   browser (tanpa API route), transaksi `swap` ditandatangani wallet pengguna.
-- Riwayat dibaca satu transaksi per satu dengan jeda ±1,1 detik (batas RPC
-  publik Devnet) dan refresh inkremental, lalu di-cache di `localStorage` agar
-  chart tetap terisi tanpa membanjiri RPC.
+- Satu `DataProvider` di root layout: pindah halaman tidak memicu ulang polling.
+- Riwayat dibaca satu transaksi per satu dengan jeda ±1,2 detik (batas RPC
+  publik Devnet), dirender bertahap (tabel & chart tumbuh, progres `n/total`),
+  lalu di-cache di `localStorage` agar kunjungan berikutnya instan.
+- `basePath` ditentukan dari fase build: `next build` selalu `/INERTIA`
+  (GitHub Pages project site), `next dev` di root. Deploy script menolak push
+  bila aset tidak berprefix.
 - `NEXT_PUBLIC_RPC_URL` boleh diisi RPC Devnet pribadi. Guard menolak endpoint
   non-Devnet kecuali `INERTIA_ALLOW_NON_DEVNET=1`.
 - Mint authority sudah dicabut, jadi nama/simbol/logo di-hardcode di UI.
 - `getTokenLargestAccounts` dilewati di RPC publik (selalu 429); tabel holder
   memakai fallback vault pool, Mass Reserve, owner, dan wallet dari event.
 - Deploy ke GitHub Pages lewat `scripts/deploy-pages.sh` (build statis lalu push
-  ke branch `gh-pages`).
+  ke branch `gh-pages` + `gh api --method POST repos/Mcybernet/INERTIA/pages/builds`).
 
 ## Toolchain
 

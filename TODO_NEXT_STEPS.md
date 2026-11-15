@@ -27,7 +27,7 @@ Fokus hari ini: **frontend** (`app/`). On-chain ditunda sampai Devnet SOL tersed
 - [x] `NEXT_PUBLIC_MINT`, `NEXT_PUBLIC_POOL`, `NEXT_PUBLIC_OWNER`, `NEXT_PUBLIC_OWNER_ATA` di `src/lib/constants.ts`, fallback v1.
 - [x] `KNOWN_ACCOUNTS` memuat alamat v1 + v2 sekaligus; label pool mengikuti `NEXT_PUBLIC_POOL_LABEL`.
 - [x] Label generasi (`v1/v2`) di header.
-- [x] Build deterministik: `GITHUB_PAGES=true npm run build` tanpa env = perilaku sekarang.
+- [x] Build deterministik: `next build` selalu `/INERTIA`, `next dev` di root (tanpa env).
 - [x] Cutover v2 = ganti env + rebuild, tanpa edit kode.
 
 ### FE-3 · Metadata & share preview
@@ -67,8 +67,14 @@ Fokus hari ini: **frontend** (`app/`). On-chain ditunda sampai Devnet SOL tersed
 - [x] `npx tsc --noEmit` bersih; build statis 11 route sukses.
 - [x] Playwright desktop 1440×900 & mobile 390×844: 0 console error, 0 request ≥400, overflow 0.
 - [x] Render progresif terukur: event pertama ±4 dtk, tabel penuh ±13 dtk, selesai ±39 dtk (27 tx).
-- [ ] `scripts/deploy-pages.sh` + `gh api --method POST repos/Mcybernet/INERTIA/pages/builds`.
-- [ ] Cek live: status 200, chart render, trade panel muncul, wallet connect OK.
+- [x] `scripts/deploy-pages.sh` + `gh api --method POST repos/Mcybernet/INERTIA/pages/builds` (gh-pages `8af34da`).
+- [x] Cek live 7 halaman: status 200, chart canvas render, harga on-chain, trade panel muncul, wallet button ada.
+
+### Catatan insiden deploy
+Build yang dijalankan dari WSL/git-bash tidak meneruskan `GITHUB_PAGES` ke npm
+Windows → aset tanpa `/INERTIA` → seluruh halaman 404. Sekarang basePath
+ditentukan dari fase build dan deploy script menolak push bila aset tidak
+berprefix.
 
 ---
 
