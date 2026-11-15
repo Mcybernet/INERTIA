@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/** Polling JSON endpoint sederhana dengan force-refresh. */
-export function usePolling<T>(path: string, intervalMs: number) {
+export type PollingLoader<T> = (force: boolean) => Promise<T>;
+
+/** Polling loader async dengan force-refresh. */
+export function usePolling<T>(loader: PollingLoader<T>, intervalMs: number) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -12,14 +14,9 @@ export function usePolling<T>(path: string, intervalMs: number) {
   const load = useCallback(
     async (force = false) => {
       try {
-        const url = force
-          ? `${path}${path.includes("?") ? "&" : "?"}force=1`
-          : path;
-        const res = await fetch(url, { cache: "no-store" });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
+        const json = await loader(force);
         if (mounted.current) {
-          setData(json as T);
+          setData(json);
           setError(null);
           setLoading(false);
         }
@@ -30,7 +27,7 @@ export function usePolling<T>(path: string, intervalMs: number) {
         }
       }
     },
-    [path],
+    [loader],
   );
 
   useEffect(() => {

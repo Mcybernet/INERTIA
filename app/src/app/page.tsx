@@ -12,7 +12,7 @@ import { TradePanel } from "@/components/TradePanel";
 import { Panel } from "@/components/ui";
 import { usePolling } from "@/hooks/usePolling";
 import { PROGRAM_ID } from "@/lib/constants";
-import type { HistoryEvent, HolderRow, PoolSnapshot } from "@/lib/types";
+import { getHistory, getHolders, getPoolSnapshot } from "@/lib/data";
 
 const PriceChart = dynamic(() => import("@/components/PriceChart"), {
   ssr: false,
@@ -20,9 +20,9 @@ const PriceChart = dynamic(() => import("@/components/PriceChart"), {
 });
 
 export default function Home() {
-  const pool = usePolling<PoolSnapshot>("/api/pool", 20_000);
-  const history = usePolling<HistoryEvent[]>("/api/history?limit=100", 45_000);
-  const holders = usePolling<HolderRow[]>("/api/holders", 120_000);
+  const pool = usePolling(getPoolSnapshot, 20_000);
+  const history = usePolling(getHistory, 45_000);
+  const holders = usePolling(getHolders, 120_000);
   const { publicKey } = useWallet();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -57,6 +57,16 @@ export default function Home() {
               Devnet RPC publik bisa membatasi laju. Coba refresh beberapa saat
               lagi.
             </span>
+          </div>
+        ) : null}
+
+        {history.error ? (
+          <div className="mb-3 border border-line bg-ink-1 px-4 py-2 text-[10px] text-dim">
+            <span className="uppercase tracking-label text-gold">
+              Riwayat tertunda ·{" "}
+            </span>
+            RPC publik sedang membatasi permintaan. Chart dan aktivitas memakai
+            data terakhir yang tersimpan; refresh otomatis akan mencoba lagi.
           </div>
         ) : null}
 

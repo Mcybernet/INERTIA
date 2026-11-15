@@ -5,6 +5,7 @@ import {
   MINT,
   OWNER_ADDRESS,
   OWNER_ATA,
+  RPC_URL,
   SUPPLY_RAW,
 } from "../constants";
 import { derivePdas } from "../pool";
@@ -29,9 +30,13 @@ export async function loadHolders(force = false): Promise<HolderRow[]> {
   const total = await totalSupply();
 
   // Jalur utama: RPC yang mendukung getTokenLargestAccounts. Di RPC publik
-  // metode ini sering 429, jadi dinonaktifkan 5 menit setelah gagal.
+  // metode ini hampir selalu 429, jadi langsung pakai fallback kecuali
+  // diaktifkan eksplisit lewat NEXT_PUBLIC_ENABLE_LARGEST_ACCOUNTS=1.
+  const publicRpc = RPC_URL.includes("api.devnet.solana.com");
+  const largestEnabled =
+    !publicRpc || process.env.NEXT_PUBLIC_ENABLE_LARGEST_ACCOUNTS === "1";
   let rows: HolderRow[] = [];
-  if (Date.now() >= largestDisabledUntil) {
+  if (largestEnabled && Date.now() >= largestDisabledUntil) {
     try {
       rows = await topHolders(total);
     } catch {

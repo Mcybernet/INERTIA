@@ -7,6 +7,8 @@ Tidak ada instruksi tarik likuiditas, tidak ada LP token, tidak ada burn.
 > **Scope: Devnet saja.** Skrip di repo ini menolak RPC non-Devnet kecuali
 > `INERTIA_ALLOW_NON_DEVNET=1` di-set secara sadar.
 
+**Web live (Devnet):** https://mcybernet.github.io/INERTIA/
+
 ## Dokumen
 
 | File | Isi |
@@ -99,22 +101,28 @@ menunjuk mint/pool v1.
 Dashboard + trade wallet (Next.js 14, TypeScript, Tailwind, lightweight-charts,
 wallet adapter). Tema flat: radius 0, border tipis, aksen emas `#E0A64B`.
 
+Live: **https://mcybernet.github.io/INERTIA/**
+
 ```bash
 cd app
 npm install --legacy-peer-deps
 npm run dev      # http://localhost:3000
-npm run build    # validasi produksi
+npm run build    # static export -> app/out
+npx serve out    # pratinjau hasil build
 ```
 
-- Data lewat route internal `/api/pool`, `/api/history`, `/api/holders` dengan
-  cache pendek (RPC publik Devnet membatasi laju).
-- Transaksi `swap` dibangun di browser dan ditandatangani wallet pengguna;
-  app tidak pernah meminta private key/seed phrase.
+- Situs statis: data pool/riwayat/holder dibaca langsung dari RPC Devnet di
+  browser (tanpa API route), transaksi `swap` ditandatangani wallet pengguna.
+- Riwayat dibaca satu transaksi per satu dengan jeda ±1,1 detik (batas RPC
+  publik Devnet) dan refresh inkremental, lalu di-cache di `localStorage` agar
+  chart tetap terisi tanpa membanjiri RPC.
 - `NEXT_PUBLIC_RPC_URL` boleh diisi RPC Devnet pribadi. Guard menolak endpoint
   non-Devnet kecuali `INERTIA_ALLOW_NON_DEVNET=1`.
 - Mint authority sudah dicabut, jadi nama/simbol/logo di-hardcode di UI.
-- Tanpa `getTokenLargestAccounts` (sering 429 di RPC publik), tabel holder
-  memakai fallback: vault pool, Mass Reserve, owner, dan wallet dari event.
+- `getTokenLargestAccounts` dilewati di RPC publik (selalu 429); tabel holder
+  memakai fallback vault pool, Mass Reserve, owner, dan wallet dari event.
+- Deploy ke GitHub Pages lewat `scripts/deploy-pages.sh` (build statis lalu push
+  ke branch `gh-pages`).
 
 ## Toolchain
 

@@ -22,8 +22,18 @@ export function getConnection(): Connection {
   if (!cached) {
     cached = new Connection(RPC_URL, {
       commitment: "confirmed",
+      // Retry 429 ditangani sendiri supaya batch riwayat bisa dipecah kecil.
       disableRetryOnRateLimit: true,
     });
   }
   return cached;
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function requestFailed(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /429|too many requests|rate limit|failed to get/i.test(message);
 }
