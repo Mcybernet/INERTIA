@@ -11,7 +11,7 @@ type Cache = { at: number; events: HistoryEvent[]; sigs?: string[] };
  * mengirim `getTransactions` sebagai batch JSON-RPC (langsung 429). Jadi
  * transaksi diambil satu per satu dengan jeda ±1,1 detik (terukur aman).
  */
-const TX_GAP_MS = 1_100;
+const TX_GAP_MS = 1_200;
 const MAX_ATTEMPTS = 3;
 const TTL_MS = 30_000;
 const FRESH_STORAGE_MS = 3 * 60_000;
@@ -118,6 +118,10 @@ async function runHistory(
     cache = { at: lastGood.at, events: lastGood.events, sigs: lastGood.sigs };
     return lastGood.events;
   }
+
+  // Kunjungan pertama: beri jeda singkat supaya tidak bertabrakan dengan
+  // getAccountInfo/getTokenSupply yang dipanggil dashboard bersamaan.
+  if (!lastGood) await sleep(1_200);
 
   const connection = getConnection();
   const pdas = derivePdas(MINT);

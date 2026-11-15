@@ -11,6 +11,7 @@ import {
   tierFor,
 } from "@/lib/constants";
 import { fmtSolNumber, fmtToken, fmtPct } from "@/lib/format";
+import { getPoolSnapshot } from "@/lib/data";
 import {
   priceImpactBps,
   quoteBuy,
@@ -155,9 +156,10 @@ export function TradePanel({
     setBusy(true);
     setNotice(null);
     try {
-      const freshRes = await fetch("/api/pool?force=1", { cache: "no-store" });
-      const fresh = (await freshRes.json()) as PoolSnapshot & { error?: string };
-      if (!freshRes.ok || fresh.error) {
+      const fresh = (await getPoolSnapshot(true)) as PoolSnapshot & {
+        error?: string;
+      };
+      if (fresh.error) {
         throw new Error(fresh.error ?? "gagal memuat state pool terbaru");
       }
 
