@@ -23,7 +23,7 @@ export default function PriceChart({
   events: HistoryEvent[];
   loading: boolean;
 }) {
-  const [timeframe, setTimeframe] = useState<number>(300);
+  const [timeframe, setTimeframe] = useState<number>(3600);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -132,7 +132,19 @@ export default function PriceChart({
         color: c.close >= c.open ? "rgba(79,165,122,0.35)" : "rgba(199,106,106,0.35)",
       })),
     );
-    chartRef.current.timeScale().fitContent();
+
+    // Jangan pakai fitContent() mentah: dengan 1–2 candle, tiap candle bisa
+    // melebar selebar panel. Batasi lebar candle maksimal 22 px, sisanya
+    // whitespace, dan tetap tempelkan candle terakhir di kanan.
+    const timeScale = chartRef.current.timeScale();
+    const count = candles.length;
+    if (count > 0) {
+      const width = wrapRef.current?.clientWidth ?? 640;
+      const slots = Math.max(count + 4, Math.round(width / 22));
+      const spacing = Math.max(4, Math.min(22, width / slots));
+      timeScale.applyOptions({ rightOffset: 4, barSpacing: spacing });
+      timeScale.scrollToRealTime();
+    }
   }, [candles]);
 
   return (
