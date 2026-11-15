@@ -1,3 +1,4 @@
+import { MIN_MASS_SOL, RENT_EXEMPT_MIN } from "@/lib/constants";
 import { fmtAgo, fmtPct, fmtSolLamports, fmtTokenInt } from "@/lib/format";
 import type { PoolSnapshot } from "@/lib/types";
 import { Panel, PanelHeader } from "./ui";
@@ -49,9 +50,6 @@ function Row({
     </div>
   );
 }
-
-const RENT_EXEMPT_MIN = 890_880n;
-const MIN_MASS_SOL = 1_000_000_000n;
 
 export function PoolPanel({ snapshot }: { snapshot: PoolSnapshot }) {
   const tokenReserve = BigInt(snapshot.tokenReserve);

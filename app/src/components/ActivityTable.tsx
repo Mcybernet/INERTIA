@@ -1,6 +1,19 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import { fmtSolNumber, fmtTime, fmtToken } from "@/lib/format";
 import type { HistoryEvent } from "@/lib/types";
 import { Empty, Panel, PanelHeader, Skeleton } from "./ui";
+
+type KindFilter = "all" | HistoryEvent["kind"];
+
+const FILTERS: { id: KindFilter; label: string }[] = [
+  { id: "all", label: "Semua" },
+  { id: "buy", label: "Beli" },
+  { id: "sell", label: "Jual" },
+  { id: "mass", label: "Massa" },
+  { id: "seed", label: "Seed" },
+];
 
 function badge(kind: HistoryEvent["kind"]) {
   switch (kind) {
@@ -18,24 +31,90 @@ function badge(kind: HistoryEvent["kind"]) {
 export function ActivityTable({
   events,
   loading,
+  rows = 30,
+  filterable = false,
+  initialFilter = "all",
+  title = "Aktivitas",
+  subtitle,
+  emptyText = "Belum ada aktivitas swap",
+  scroll = true,
 }: {
   events: HistoryEvent[];
   loading: boolean;
+  rows?: number;
+  filterable?: boolean;
+  initialFilter?: KindFilter;
+  title?: string;
+  subtitle?: string;
+  emptyText?: string;
+  scroll?: boolean;
 }) {
-  const rows = [...events].reverse().slice(0, 30);
+  const [filter, setFilter] = useState<KindFilter>(initialFilter);
+  const [visible, setVisible] = useState(rows);
+
+  const counts = useMemo(() => {
+    const map: Record<KindFilter, number> = {
+      all: events.length,
+      buy: 0,
+      sell: 0,
+      mass: 0,
+      seed: 0,
+    };
+    for (const event of events) map[event.kind] += 1;
+    return map;
+  }, [events]);
+
+  const filtered = useMemo(
+    () => (filter === "all" ? events : events.filter((e) => e.kind === filter)),
+    [events, filter],
+  );
+  const list = useMemo(() => [...filtered].reverse(), [filtered]);
+  const shown = list.slice(0, visible);
+
+  function changeFilter(next: KindFilter) {
+    setFilter(next);
+    setVisible(rows);
+  }
 
   return (
     <Panel>
       <PanelHeader
-        title="Aktivitas"
-        subtitle={`${events.length} event on-chain`}
+        title={title}
+        subtitle={subtitle ?? `${events.length} event on-chain`}
         right={
-          <span className="text-[10px] tracking-label text-dim">
-            SWAP · MASSA · SEED
-          </span>
+          filterable ? (
+            <div className="flex flex-wrap gap-1">
+              {FILTERS.map((item) => {
+                const isActive = filter === item.id;
+                const count = counts[item.id];
+                if (item.id !== "all" && count === 0 && !isActive) return null;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => changeFilter(item.id)}
+                    aria-pressed={isActive}
+                    className={`chip py-1 ${
+                      isActive ? "chip-active" : ""
+                    }`}
+                  >
+                    {item.label}
+                    <span className="ml-1.5 text-[9px] opacity-70">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <span className="text-[10px] tracking-label text-dim">
+              SWAP · MASSA · SEED
+            </span>
+          )
         }
       />
-      <div className="max-h-[340px] overflow-auto">
+
+      <div className={scroll ? "max-h-[420px] overflow-auto" : "overflow-x-auto"}>
         <table className="w-full border-collapse text-left">
           <thead className="sticky top-0 z-10 bg-ink-1">
             <tr className="border-b border-line">
@@ -50,7 +129,7 @@ export function ActivityTable({
             </tr>
           </thead>
           <tbody>
-            {loading && rows.length === 0
+            {loading && list.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i} className="border-b border-lineSoft">
                     {Array.from({ length: 6 }).map((__, j) => (
@@ -60,7 +139,7 @@ export function ActivityTable({
                     ))}
                   </tr>
                 ))
-              : rows.map((event) => {
+              : shown.map((event) => {
                   const b = badge(event.kind);
                   const wallet =
                     event.kind === "seed"
@@ -68,7 +147,6 @@ export function ActivityTable({
                       : event.kind === "mass"
                         ? event.caller
                         : event.wallet;
-                  const tokenAmount = event.tokenAmount;
                   const solAmount =
                     event.kind === "buy" || event.kind === "sell"
                       ? event.solUser
@@ -97,7 +175,7 @@ export function ActivityTable({
                         </span>
                       </td>
                       <td className="mono whitespace-nowrap px-3 py-2.5 text-[11px] text-fg">
-                        {fmtToken(tokenAmount, 2)}
+                        {fmtToken(event.tokenAmount, 2)}
                       </td>
                       <td className="mono whitespace-nowrap px-3 py-2.5 text-[11px] text-muted">
                         {fmtSolNumber(Number(BigInt(solAmount)) / 1e9, true)}
@@ -127,10 +205,27 @@ export function ActivityTable({
                 })}
           </tbody>
         </table>
-        {!loading && rows.length === 0 ? (
-          <Empty text="Belum ada aktivitas swap" />
-        ) : null}
+        {!loading && list.length === 0 ? <Empty text={emptyText} /> : null}
       </div>
+
+      {list.length > 0 ? (
+        <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
+          <span>
+            Menampilkan {shown.length} dari {list.length} event
+          </span>
+          {visible < list.length ? (
+            <button
+              type="button"
+              onClick={() => setVisible((v) => v + rows)}
+              className="chip py-1"
+            >
+              Muat lebih
+            </button>
+          ) : (
+            <span>Semua event termuat</span>
+          )}
+        </footer>
+      ) : null}
     </Panel>
   );
 }

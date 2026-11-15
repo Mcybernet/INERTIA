@@ -74,15 +74,17 @@ function DetailRow({
 export function TradePanel({
   snapshot,
   onDone,
+  initialSide = "buy",
 }: {
   snapshot: PoolSnapshot;
   onDone: () => void;
+  initialSide?: Side;
 }) {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
   const balances = useBalances();
 
-  const [side, setSide] = useState<Side>("buy");
+  const [side, setSide] = useState<Side>(initialSide);
   const [amount, setAmount] = useState("");
   const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE_BPS);
   const [busy, setBusy] = useState(false);

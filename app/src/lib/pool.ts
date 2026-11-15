@@ -2,6 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import {
   MINT,
+  POOL_OVERRIDE,
   PRICE_SCALE,
   PROGRAM_ID,
   SEEDS,
@@ -29,11 +30,16 @@ function pda(seed: string, pool: PublicKey): PublicKey {
 }
 
 /** Turunan alamat yang sama dengan CLI `inertia-devnet`. */
-export function derivePdas(mint: PublicKey = MINT): Pdas {
-  const pool = PublicKey.findProgramAddressSync(
-    [seedBytes(SEEDS.pool), mint.toBytes()],
-    PROGRAM_ID,
-  )[0];
+export function derivePdas(
+  mint: PublicKey = MINT,
+  poolOverride: PublicKey | null = POOL_OVERRIDE,
+): Pdas {
+  const pool =
+    poolOverride ??
+    PublicKey.findProgramAddressSync(
+      [seedBytes(SEEDS.pool), mint.toBytes()],
+      PROGRAM_ID,
+    )[0];
   const vaultAuthority = pda(SEEDS.vaultAuth, pool);
   const reserveAuthority = pda(SEEDS.reserveAuth, pool);
   return {

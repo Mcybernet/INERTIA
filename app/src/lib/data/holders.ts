@@ -11,7 +11,7 @@ import {
 import { derivePdas } from "../pool";
 import type { HolderRow } from "../types";
 import { getConnection } from "./connection";
-import { loadHistory } from "./history";
+import { getCachedHistory } from "./history";
 
 type Cache = { at: number; rows: HolderRow[] };
 let cache: Cache | null = null;
@@ -119,9 +119,10 @@ async function knownHolders(total: bigint): Promise<HolderRow[]> {
     },
   ];
 
-  // Tambahkan wallet yang pernah swap (dari event on-chain).
+  // Tambahkan wallet yang pernah swap dari cache riwayat (tanpa memicu fetch
+  // berantai: loadHistory bisa memakan ±20 detik karena pacing RPC).
   try {
-    const events = await loadHistory(100);
+    const events = getCachedHistory();
     const seen = new Set<string>();
     for (const event of events) {
       if (event.kind !== "buy" && event.kind !== "sell") continue;

@@ -24,6 +24,32 @@ let cache: Cache | null = null;
 let lastGood: Cache | null = null;
 let pending: Promise<HistoryEvent[]> | null = null;
 
+export type HistoryProgress = { done: number; total: number };
+type HistoryListener = (events: HistoryEvent[], progress: HistoryProgress) => void;
+const listeners = new Set<HistoryListener>();
+
+/** Dipakai UI untuk menampilkan event yang sudah masuk sebelum fetch selesai. */
+export function subscribeHistory(fn: HistoryListener): () => void {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
+function emit(events: HistoryEvent[], progress: HistoryProgress) {
+  for (const fn of listeners) fn(events, progress);
+}
+
+/** Riwayat yang sudah ada di memori/disk, tanpa memicu permintaan RPC. */
+export function getCachedHistory(): HistoryEvent[] {
+  if (cache) return cache.events;
+  if (lastGood) return lastGood.events;
+  const stored = readStorage();
+  if (stored && Date.now() - stored.at < STALE_MS) {
+    lastGood = stored;
+    return stored.events;
+  }
+  return [];
+}
+
 function dedupeSort(events: HistoryEvent[]): HistoryEvent[] {
   const seen = new Set<string>();
   const unique = events.filter((event) => {
@@ -186,6 +212,14 @@ async function runHistory(
     } catch {
       failures += 1;
     }
+    // Tampilkan hasil bertahap: pengguna melihat chart/aktivitas tumbuh,
+    // bukan layar kosong selama ±20 detik pada kunjungan pertama.
+    if (collected.length > 0) {
+      emit(dedupeSort([...(lastGood?.events ?? []), ...collected]), {
+        done: index + 1,
+        total: targets.length,
+      });
+    }
     if (index < targets.length - 1) await sleep(TX_GAP_MS);
   }
 
@@ -201,5 +235,6 @@ async function runHistory(
   cache = result;
   lastGood = result;
   writeStorage(result);
+  emit(merged, { done: targets.length, total: targets.length });
   return merged;
 }

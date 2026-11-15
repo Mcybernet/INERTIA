@@ -5,10 +5,31 @@ export const PROGRAM_ID = new PublicKey(
   "8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o",
 );
 
+/**
+ * Alamat default = peluncuran v1. Saat pool v2 live, cukup set
+ * `NEXT_PUBLIC_MINT`, `NEXT_PUBLIC_POOL`, dan `NEXT_PUBLIC_OWNER_ATA`
+ * lalu rebuild — tidak perlu mengubah kode.
+ */
+const DEFAULT_MINT = "GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H";
+const DEFAULT_POOL = "";
+const DEFAULT_OWNER = "86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C";
+const DEFAULT_OWNER_ATA = "7b4cYnPTtxYsFe9Z4mUHPMZDBy6h3VvwPwaAME9Jq5ts";
+
+function env(name: string, fallback: string): string {
+  const value = process.env[name];
+  return value && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 /** Mint INRT Devnet (decimals 6, mint authority revoked). */
-export const MINT = new PublicKey(
-  "GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H",
-);
+export const MINT = new PublicKey(env("NEXT_PUBLIC_MINT", DEFAULT_MINT));
+
+/** Override alamat pool kalau state tidak diturunkan dari mint (opsional). */
+export const POOL_OVERRIDE: PublicKey | null = env("NEXT_PUBLIC_POOL", DEFAULT_POOL)
+  ? new PublicKey(env("NEXT_PUBLIC_POOL", DEFAULT_POOL))
+  : null;
+
+/** Label generasi peluncuran yang sedang dipakai UI. */
+export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v1");
 
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
@@ -47,8 +68,8 @@ export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
 );
 
 /** Alamat yang selalu relevan untuk tabel holder. */
-export const OWNER_ADDRESS = "86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C";
-export const OWNER_ATA = "7b4cYnPTtxYsFe9Z4mUHPMZDBy6h3VvwPwaAME9Jq5ts";
+export const OWNER_ADDRESS = env("NEXT_PUBLIC_OWNER", DEFAULT_OWNER);
+export const OWNER_ATA = env("NEXT_PUBLIC_OWNER_ATA", DEFAULT_OWNER_ATA);
 export const KNOWN_ACCOUNTS: Record<string, string> = {
   "HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM": "POOL VAULT",
   "HcmXidwTkTGRFTvJAx4bCj7Ebs5gJZmJVNakvBnpPJff": "POOL VAULT",
@@ -56,6 +77,17 @@ export const KNOWN_ACCOUNTS: Record<string, string> = {
   "7b4cYnPTtxYsFe9Z4mUHPMZDBy6h3VvwPwaAME9Jq5ts": "OWNER",
   "86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C": "OWNER",
 };
+
+/** Batas `add_mass`: minimal 1 SOL, maksimal 5% sisa Mass Reserve. */
+export const MIN_MASS_SOL = 1_000_000_000n;
+export const MASS_CAP_BPS = 500;
+export const MASS_RATIO_TOL_BPS = 50;
+
+/** Alokasi Mass Reserve di launch (10.000.000 INRT). */
+export const MASS_RESERVE_SUPPLY_RAW = 10_000_000n * TOKEN_UNIT;
+
+/** Rent minimum saat membuat ATA. */
+export const RENT_EXEMPT_MIN = 890_880n;
 
 export type Tier = {
   name: string;

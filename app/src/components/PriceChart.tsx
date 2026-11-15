@@ -19,9 +19,13 @@ const DOWN = "#C76A6A";
 export default function PriceChart({
   events,
   loading,
+  progress,
+  heightClass = "h-[300px] md:h-[360px]",
 }: {
   events: HistoryEvent[];
   loading: boolean;
+  progress?: { done: number; total: number } | null;
+  heightClass?: string;
 }) {
   const [timeframe, setTimeframe] = useState<number>(3600);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -191,7 +195,7 @@ export default function PriceChart({
       </header>
 
       <div className="relative">
-        <div ref={wrapRef} className="h-[300px] w-full md:h-[360px]" />
+        <div ref={wrapRef} className={`w-full ${heightClass}`} />
         {!loading && candles.length === 0 ? (
           <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-label text-dim">
             Belum ada candle — swap pertama akan muncul di sini
@@ -205,8 +209,16 @@ export default function PriceChart({
       </div>
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-        <span>Sumber: log SwapEvent dari pool · {candles.length} candle</span>
-        <span>Fee 0,30% tidak masuk reserve · k naik tipis</span>
+        <span>
+          Sumber: log SwapEvent dari pool · {candles.length} candle
+        </span>
+        {progress ? (
+          <span className="text-gold">
+            Memuat riwayat {progress.done}/{progress.total} tx
+          </span>
+        ) : (
+          <span>Fee 0,30% tidak masuk reserve · k naik tipis</span>
+        )}
       </footer>
     </section>
   );
