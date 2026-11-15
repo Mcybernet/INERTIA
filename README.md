@@ -29,7 +29,8 @@ target/deploy/              hasil build (di-gitignore)
 
 Program ID: `8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o`
 Keypair deploy: `target/deploy/inertia_mass-keypair.json` (di luar git)
-Keypair mint: `~/.config/solana/keys/inrt-mint.json` (di luar git)
+Keypair mint v1: `~/.config/solana/keys/inrt-mint.json` (di luar git)
+Keypair mint v2: `~/.config/solana/keys/inrt-mint-v2.json` (di luar git)
 
 ## Wallet
 
@@ -52,8 +53,9 @@ Keypair mint: `~/.config/solana/keys/inrt-mint.json` (di luar git)
 |---|---|
 | Program `inertia_mass` | `8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o` |
 | Upgrade authority | `86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C` |
-| Mint `INRT` (decimals 6, mint authority dicabut) | `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H` |
-| Pool | `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM` |
+| Mint `INRT` v1 (dipakai app saat ini) | `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H` |
+| Mint `INRT` v2 (metadata on-chain, pool menyusul) | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` |
+| Pool v1 | `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM` |
 | Token vault | `HcmXidwTkTGRFTvJAx4bCj7Ebs5gJZmJVNakvBnpPJff` |
 | SOL vault | `9ymSmLaEgas8329MWfLomRPEvpurxPsGCJLPYxqkcUcy` |
 | Fee vault | `4cU949bkmQquiVGpAgfFFTRmqoqpvT3ErYLSWtbbcREH` |
@@ -70,6 +72,27 @@ ke owner: 30,4 jt alokasi + 8,64 jt sisa pool = 39,04 jt. Tidak ada burn.
 `add_mass` di Devnet belum dijalankan karena `fee_vault` masih di bawah 1 SOL
 (saat ini ±0,001 SOL); jalur ini sudah terbukti di rehearsal lokal
 (`scripts/rehearsal_local.sh`).
+
+## Mint v2 + metadata on-chain (15 Nov 2026)
+
+Mint v1 tidak bisa diberi metadata Metaplex karena `mintAuthority` sudah `null`
+permanen. Mint v2 dibuat dengan supply yang sama plus metadata on-chain:
+
+| Item | Address / nilai |
+|---|---|
+| Mint | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` |
+| Metadata PDA | `C3XvK38dvjpzvWouiWBrPVz35tJG1Qr3c8iMAGF7EWkx` |
+| Name / symbol | `INERTIA` / `INRT` |
+| URI metadata | `https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@main/assets/inertia.json` |
+| Update authority | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` |
+| Seller fee / mutable | 0 bps / `true` |
+| Supply / decimals | 50.000.000 / 6 |
+| Mint authority | `null` (dicabut) |
+| Freeze authority | `null` |
+
+Payer memegang 50 jt INRT v2. Pool v2 belum di-seed: butuh top-up ±3,9 SOL
+Devnet, target 4,8 SOL + 960.000 INRT. Selama pool v2 belum ada, `app/` tetap
+menunjuk mint/pool v1.
 
 ## Frontend (`app/`)
 
