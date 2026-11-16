@@ -58,9 +58,15 @@ Fokus hari ini: **frontend** (`app/`). On-chain ditunda sampai Devnet SOL tersed
 - [ ] Audit kontras `dim` di atas `ink` ≥ 4,5:1 dan `prefers-reduced-motion`.
 
 ### FE-7 · Chart
-- [x] Default candle 1J, `barSpacing` maks 22 px, `rightOffset` 4.
+- [x] Default candle 4J, `barSpacing` maks 22 px, `rightOffset` 4.
 - [x] Label progres fetch di footer chart (`n/total tx`) tanpa mengubah skala.
-- [ ] Legend OHLC + harga terakhir.
+- [x] Legend OHLC + volume + jumlah trade; ikut crosshair, kembali ke candle terakhir.
+- [x] OHLC kontinu: `open` = close candle sebelumnya, high/low memasukkan open.
+- [x] Bucket WIB: 1J mulai 00:00, 4J di 00/04/08/12/16/20, 1Mgg mulai Senin.
+- [x] Seed diambil sekali dari signature tertua, disimpan di `inrt:launch:v1:<mint>`.
+- [x] Penanda `LAUNCH` + tombol "Sejak launch" (pilih timeframe terkecil yang masih memuat launch).
+- [x] Timeframe 1H/1Mgg tampil abu-abu sampai riwayat 7/28 hari.
+- [x] Batas 1.500 bar per timeframe + cache per timeframe + precompute saat idle.
 - [ ] Timeframe terakhir disimpan di `localStorage` (`inrt:tf`).
 
 ### FE-8 · Verifikasi rilis frontend

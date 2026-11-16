@@ -97,6 +97,41 @@ export function fmtDateTime(timestamp: number): string {
   });
 }
 
+/**
+ * Waktu chart selalu WIB (Asia/Jakarta), bukan zona waktu perangkat. Tabel
+ * aktivitas tetap memakai waktu lokal lewat `fmtTime`/`fmtDateTime`.
+ */
+const WIB_TZ = "Asia/Jakarta";
+
+const wibClockFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: WIB_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+const wibDayFmt = new Intl.DateTimeFormat("id-ID", {
+  timeZone: WIB_TZ,
+  day: "2-digit",
+  month: "short",
+});
+
+export function fmtWibClock(timestamp: number): string {
+  if (!timestamp) return "—";
+  return wibClockFmt.format(new Date(timestamp * 1000));
+}
+
+export function fmtWibDay(timestamp: number): string {
+  if (!timestamp) return "—";
+  return wibDayFmt.format(new Date(timestamp * 1000));
+}
+
+export function fmtWibDateTime(timestamp: number): string {
+  if (!timestamp) return "—";
+  const date = new Date(timestamp * 1000);
+  return `${wibDayFmt.format(date)} ${wibClockFmt.format(date)} WIB`;
+}
+
 export function fmtAgo(timestamp: number, now = Date.now() / 1000): string {
   if (!timestamp) return "—";
   const diff = Math.max(0, Math.floor(now - timestamp));

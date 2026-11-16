@@ -85,4 +85,12 @@ export type Candle = {
   low: number;
   close: number;
   volume: number;
+  /** Jumlah swap di bucket ini (seed/mass tidak dihitung). */
+  trades: number;
+  /** Jumlah `add_mass` di bucket ini. */
+  mass: number;
+  /** Bucket tanpa transaksi: diisi flat memakai close sebelumnya. */
+  synthetic: boolean;
+  /** Bucket yang memuat transaksi seed/launch. */
+  launch?: boolean;
 };
