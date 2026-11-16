@@ -5,7 +5,7 @@ File di folder ini dipakai sebagai metadata off-chain token (Metaplex):
 | File | Fungsi |
 |---|---|
 | `inertia.json` | JSON metadata (name, symbol, description, image) |
-| `inertia-logo.png` | Logo 512×512, emas `#E0A64B` di ink `#0A0A0C` |
+| `inertia-logo.png` | Logo 930×930, emas `#E0A64B` di ink `#0A0A0C` |
 
 Keduanya disajikan lewat jsDelivr dari repo publik:
 
