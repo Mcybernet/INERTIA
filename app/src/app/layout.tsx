@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "INERTIA",
     type: "website",
     locale: "id_ID",
-    images: [{ url: LOGO, width: 512, height: 512, alt: "INERTIA (INRT)" }],
+    images: [{ url: LOGO, width: 930, height: 930, alt: "INERTIA (INRT)" }],
   },
   twitter: {
     card: "summary",
