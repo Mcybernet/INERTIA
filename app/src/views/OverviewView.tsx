@@ -4,9 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ActivityTable } from "@/components/ActivityTable";
 import { useData } from "@/components/DataProvider";
-import { PoolPanel } from "@/components/PoolPanel";
+import { MarketPanel } from "@/components/MarketPanel";
 import { StatStrip } from "@/components/StatStrip";
-import { TradePanel } from "@/components/TradePanel";
 import { PageIntro } from "@/components/PageIntro";
 import { Panel } from "@/components/ui";
 
@@ -15,8 +14,32 @@ const PriceChart = dynamic(() => import("@/components/PriceChart"), {
   loading: () => <div className="panel h-[420px]" />,
 });
 
+const PRINCIPLES = [
+  {
+    kicker: "01 · Mekanisme",
+    title: "Tanpa bonding curve",
+    text: "Harga dibentuk constant-product di pool internal. Tidak ada kurva yang naik sesuai jadwal, tidak ada harga yang dijanjikan.",
+    href: "/tokenomics",
+    cta: "Baca tokenomics",
+  },
+  {
+    kicker: "02 · Likuiditas",
+    title: "Tidak bisa ditarik",
+    text: "Tidak ada instruksi withdraw. Token hanya bisa keluar dari Mass Reserve lewat add_mass, dan itu menambah likuiditas permanen.",
+    href: "/mass",
+    cta: "Lihat Mass Reserve",
+  },
+  {
+    kicker: "03 · Fee",
+    title: "Fee kembali ke massa",
+    text: "Setiap swap menyisihkan 0,30% ke fee vault terpisah. Fee itu dibelanjakan lewat add_mass — bukan diambil owner.",
+    href: "/mass",
+    cta: "Cara kerja fee",
+  },
+] as const;
+
 export function OverviewView() {
-  const { pool, history, events, progress, refreshAll } = useData();
+  const { pool, history, events, progress } = useData();
 
   return (
     <>
@@ -25,9 +48,14 @@ export function OverviewView() {
         title="The Mass — likuiditas yang tidak bisa ditarik"
         description="Harga dibentuk constant-product di pool internal. Tidak ada bonding curve, tidak ada instruksi withdraw: satu-satunya jalan token keluar dari Mass Reserve adalah add_mass."
         right={
-          <Link href="/trade" className="btn btn-gold">
-            Beli / Jual INRT
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/trade#buy" className="btn btn-gold">
+              Beli INRT
+            </Link>
+            <Link href="/docs" className="btn btn-ghost">
+              Cara kerja
+            </Link>
+          </div>
         }
       />
 
@@ -56,7 +84,11 @@ export function OverviewView() {
 
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_350px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-3">
-          <PriceChart events={events} loading={history.loading} progress={progress} />
+          <PriceChart
+            events={events}
+            loading={history.loading}
+            progress={progress}
+          />
           <ActivityTable
             events={events}
             loading={history.loading}
@@ -82,12 +114,32 @@ export function OverviewView() {
 
         <div className="flex flex-col gap-3">
           {pool.data ? (
-            <TradePanel snapshot={pool.data} onDone={refreshAll} />
+            <MarketPanel snapshot={pool.data} events={events} />
           ) : (
             <Panel className="h-[420px] animate-pulseSoft" />
           )}
-          {pool.data ? <PoolPanel snapshot={pool.data} /> : null}
         </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-px border border-line bg-line md:grid-cols-3">
+        {PRINCIPLES.map((item) => (
+          <Link
+            key={item.title}
+            href={item.href}
+            className="group bg-ink-1 px-4 py-4 transition-colors duration-150 hover:bg-ink-2"
+          >
+            <div className="label">{item.kicker}</div>
+            <h2 className="mt-2 text-[12px] uppercase tracking-label text-fg group-hover:text-gold">
+              {item.title}
+            </h2>
+            <p className="mt-2 text-[10px] leading-relaxed text-muted">
+              {item.text}
+            </p>
+            <span className="mt-3 inline-block text-[9px] uppercase tracking-label text-dim group-hover:text-gold">
+              {item.cta} →
+            </span>
+          </Link>
+        ))}
       </div>
     </>
   );
