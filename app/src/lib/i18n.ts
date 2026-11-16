@@ -85,12 +85,7 @@ const EN: Record<string, string> = {
     "{label} · needs {need} days of history ({have} now)",
   "{label} · bucket WIB": "{label} · WIB bucket",
   "Harga INRT / SOL": "INRT / SOL price",
-  "24J": "24h",
   "belum ada trade": "no trades",
-  "Perubahan 24 jam terhadap harga 24 jam lalu":
-    "24-hour change against the price 24 hours ago",
-  "Perubahan sejak harga launch · riwayat baru {window}":
-    "Change since launch price · only {window} of history",
   "Pindah ke candle pertama sejak pool dibuat":
     "Jump to the first candle since pool creation",
   "Sejak launch": "Since launch",

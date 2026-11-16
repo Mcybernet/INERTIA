@@ -80,21 +80,21 @@ operasional repo.
 - [x] Semua halaman & komponen diterjemahkan; em dash `—` dihapus dari UI.
 - [x] Playwright: 7 halaman EN tanpa sisa kata Indonesia, switch dua arah, 360–1280 tanpa overflow.
 
-### FE-10 · Metrik persen chart (P0, keputusan final TradingView)
+### FE-10 · Metrik persen chart (P0, selesai)
 
-**Keputusan final (17 Nov 2026): ikuti konvensi TradingView.**
-- Header = perubahan **24 jam** terhadap harga 24 jam lalu, dengan label `24J` / `24h`. Selama riwayat pool belum 24 jam, fallback ke harga launch dan label memakai rentang yang benar-benar diukur (mis. `3,7J` / `3.7h`), bukan kata `sejak launch`. Angka header memang tidak berubah saat ganti timeframe (by design).
-- Legend OHLC = perubahan candle yang di-hover terhadap close candle sebelumnya (`close vs open`; ekuivalen karena `open` = prev close). Ini yang berubah saat ganti timeframe.
+**Keputusan final (17 Nov 2026, revisi): header = candle berjalan.**
+- Header = persen perubahan **candle berjalan** (`close` vs `open`) pada timeframe aktif, sama persis dengan Δ di legend. Tidak ada label periode (`24J`, `3,7J`, `sejak launch`) di sebelah harga.
+- Keputusan konvensi 24 jam (live `c35348c`) **digantikan** oleh aturan ini karena pengguna meminta header mengikuti angka Δ realtime. Angka header sekarang berubah saat ganti timeframe.
+- Legend OHLC = perubahan candle yang di-hover terhadap close candle sebelumnya (`close vs open`; ekuivalen karena `open` = prev close). Tanpa hover, legend memakai candle terakhir sehingga angkanya sama dengan header.
 - Format: tanda `-` untuk turun, `+` untuk naik, nol `0,00%` tanpa tanda; warna up/down, nol muted.
 - Candle flat (tanpa trade) diberi catatan `belum ada trade` / `no trades` supaya tidak terlihat rusak.
 - Metrik "sejak event pertama" tetap ada di `MarketPanel` Overview; tidak diduplikasi di chart.
 
-**Checklist implementasi (selesai, live `c35348c`):**
+**Checklist implementasi (selesai, live `c35348c` + revisi header):**
 - [x] Tambah `fmtSignedPct(pct)` di `format.ts` (menerima persen, bukan bps; nol `0,00%`, tanda `+`/`-`).
-- [x] Hitung 24 jam dari events (`latestTs`, base = event terakhir ≤ `latestTs - 86400`, fallback launch) di `PriceChart.tsx`; hapus `first.open` + `activeMeta` + label `dalam {label}`.
-- [x] Header pakai label `24J`/`24h` atau rentang berjalan; legend pakai `fmtSignedPct`; tambah catatan `belum ada trade`.
-- [x] Tambah kunci i18n + tooltip, cek duplikat dengan `check-i18n.cjs`.
-- [x] `npx tsc --noEmit`, `npm run build`, `check-i18n-pages.cjs`, `probe-pct.cjs`.
+- [x] Hapus `changeFromEvents`/`DAY_SECONDS`/label window dari `PriceChart.tsx`; header pakai `last.close` vs `last.open`.
+- [x] Tooltip header dan legend memakai kunci yang sama (`Perubahan candle (close vs open)`); kunci i18n 24 jam/window dihapus.
+- [x] `npx tsc --noEmit`, `check-i18n.cjs`, `npm run build`, uji lokal: header = Δ default, berubah antar timeframe, tanpa label periode, `1H`/`1Mgg` tetap disabled.
 - [x] Deploy `gh-pages`, verifikasi live, commit sumber ke `main`.
 
 ### FE-11 · Logo header & pagination activity (selesai)

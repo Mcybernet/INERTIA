@@ -160,11 +160,9 @@ npx serve out    # buka http://localhost:3000/INERTIA/
   `localStorage` (`inrt:lang`). Kamus ada di `app/src/lib/i18n.ts`
   (kunci teks Indonesia, fallback ke teks asli bila belum diterjemahkan).
 - Chart memakai WIB, default 4J, candle terakhir di tengah. Header menampilkan
-  perubahan 24 jam dengan label `24J`/`24h`; selama riwayat belum 24 jam,
-  labelnya memakai rentang yang benar-benar diukur (mis. `3,7J`/`3.7h`) dan
-  tooltip menjelaskan bahwa angkanya sejak launch. Legend OHLC mengikuti
-  crosshair dan menampilkan persen perubahan candle tersebut (close vs previous
-  close).
+  persen perubahan candle berjalan (`close` vs `open`) pada timeframe aktif,
+  sama dengan Δ di legend, tanpa label periode. Legend OHLC mengikuti crosshair
+  dan menampilkan persen perubahan candle tersebut (close vs previous close).
 - Tabel aktivitas di `/activity` memakai pagination 10 baris per halaman, jadi
   hanya 10 baris DOM yang dirender meskipun riwayatnya panjang.
 - `getTokenLargestAccounts` dilewati di RPC publik (selalu 429); tabel holder

@@ -30,78 +30,11 @@ import {
   fmtWibDay,
   getFormatLocale,
 } from "@/lib/format";
-import { priceToSol } from "@/lib/price";
 import type { Candle, HistoryEvent } from "@/lib/types";
 import { useI18n } from "./LanguageProvider";
 
 const UP = "#4FA57A";
 const DOWN = "#C76A6A";
-
-/** Header chart mengikuti konvensi exchange: perubahan 24 jam. */
-const DAY_SECONDS = 86_400;
-
-type ChangeMeta = {
-  pct: number;
-  mode: "24h" | "launch";
-  /** Rentang yang benar-benar diukur, dipakai untuk label header. */
-  spanSeconds: number;
-};
-
-/**
- * Perubahan harga untuk header.
- *
- * - Riwayat >= 24 jam: harga terakhir vs harga terakhir pada/paling dekat
- *   sebelum `latestTs - 24 jam`.
- * - Riwayat < 24 jam: fallback ke harga launch, dengan label "sejak launch".
- *
- * Sengaja tidak memakai candle timeframe aktif, supaya angkanya tetap sama
- * saat pengguna berganti timeframe (seperti TradingView / exchange).
- */
-function changeFromEvents(events: HistoryEvent[]): ChangeMeta {
-  let first: { ts: number; price: number } | null = null;
-  let latest: { ts: number; price: number } | null = null;
-
-  for (const event of events) {
-    if (event.timestamp <= 0) continue;
-    const price = priceToSol(event.priceAfter);
-    if (!(price > 0)) continue;
-    if (!first || event.timestamp < first.ts) {
-      first = { ts: event.timestamp, price };
-    }
-    if (!latest || event.timestamp > latest.ts) {
-      latest = { ts: event.timestamp, price };
-    }
-  }
-
-  if (!first || !latest) return { pct: 0, mode: "launch", spanSeconds: 0 };
-
-  const spanSeconds = latest.ts - first.ts;
-  if (spanSeconds < DAY_SECONDS) {
-    return {
-      pct: ((latest.price - first.price) / first.price) * 100,
-      mode: "launch",
-      spanSeconds,
-    };
-  }
-
-  const cutoff = latest.ts - DAY_SECONDS;
-  let base = first.price;
-  let baseTs = -Infinity;
-  for (const event of events) {
-    if (event.timestamp <= 0 || event.timestamp > cutoff) continue;
-    if (event.timestamp < baseTs) continue;
-    const price = priceToSol(event.priceAfter);
-    if (!(price > 0)) continue;
-    base = price;
-    baseTs = event.timestamp;
-  }
-
-  return {
-    pct: ((latest.price - base) / base) * 100,
-    mode: "24h",
-    spanSeconds: DAY_SECONDS,
-  };
-}
 
 type IdleWindow = Window & {
   requestIdleCallback?: (
@@ -289,23 +222,12 @@ export default function PriceChart({
 
   const last = candles.length > 0 ? candles[candles.length - 1]! : null;
   const shown = hover ?? last;
-  const changeMeta = useMemo(() => changeFromEvents(events), [events]);
-  const change = changeMeta.pct;
+  // Header memakai perubahan candle berjalan (close vs open) pada timeframe
+  // aktif, sama persis dengan Δ di legend.
+  const change =
+    last && last.open > 0 ? ((last.close - last.open) / last.open) * 100 : 0;
   const changeTone =
     change > 0 ? "text-up" : change < 0 ? "text-down" : "text-dim";
-  const changeWindow = useMemo(() => {
-    if (changeMeta.mode === "24h") return t("24J");
-    const seconds = Math.max(0, changeMeta.spanSeconds);
-    if (seconds < 3_600) {
-      const minutes = Math.max(1, Math.round(seconds / 60));
-      return `${minutes}${lang === "en" ? "m" : "M"}`;
-    }
-    const hours = seconds / 3_600;
-    const value = hours.toLocaleString(getFormatLocale(), {
-      maximumFractionDigits: 1,
-    });
-    return `${value}${lang === "en" ? "h" : "J"}`;
-  }, [changeMeta, lang, t]);
   const shownChange =
     shown && shown.open > 0
       ? ((shown.close - shown.open) / shown.open) * 100
@@ -589,20 +511,11 @@ export default function PriceChart({
             <span className="mono text-[22px] leading-none text-fg">
               {last ? `${candlePrice(last.close)} SOL` : EMPTY}
             </span>
-            <span className={`mono text-[11px] ${changeTone}`}>
-              {last ? fmtSignedPct(change) : EMPTY}
-            </span>
             <span
-              className="text-[10px] text-dim"
-              title={
-                changeMeta.mode === "24h"
-                  ? t("Perubahan 24 jam terhadap harga 24 jam lalu")
-                  : t("Perubahan sejak harga launch · riwayat baru {window}", {
-                      window: changeWindow,
-                    })
-              }
+              className={`mono text-[11px] ${changeTone}`}
+              title={t("Perubahan candle (close vs open)")}
             >
-              {last ? changeWindow : EMPTY}
+              {last ? fmtSignedPct(change) : EMPTY}
             </span>
           </div>
         </div>
