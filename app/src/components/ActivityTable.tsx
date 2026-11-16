@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { fmtSolNumber, fmtTime, fmtToken } from "@/lib/format";
+import { EMPTY, fmtSolNumber, fmtTime, fmtToken } from "@/lib/format";
 import type { HistoryEvent } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 import { Empty, Panel, PanelHeader, Skeleton } from "./ui";
 
 type KindFilter = "all" | HistoryEvent["kind"];
@@ -49,6 +50,7 @@ export function ActivityTable({
   emptyText?: string;
   scroll?: boolean;
 }) {
+  const { t } = useI18n();
   const [filter, setFilter] = useState<KindFilter>(initialFilter);
   const [visible, setVisible] = useState(rows);
 
@@ -79,8 +81,8 @@ export function ActivityTable({
   return (
     <Panel>
       <PanelHeader
-        title={title}
-        subtitle={subtitle ?? `${events.length} event on-chain`}
+        title={t(title)}
+        subtitle={subtitle ?? t("{n} event on-chain", { n: events.length })}
         right={
           filterable ? (
             <div className="flex flex-wrap gap-1">
@@ -98,7 +100,7 @@ export function ActivityTable({
                       isActive ? "chip-active" : ""
                     }`}
                   >
-                    {item.label}
+                    {t(item.label)}
                     <span className="ml-1.5 text-[9px] opacity-70">
                       {count}
                     </span>
@@ -108,7 +110,7 @@ export function ActivityTable({
             </div>
           ) : (
             <span className="text-[10px] tracking-label text-dim">
-              SWAP · MASSA · SEED
+              {t("SWAP · MASSA · SEED")}
             </span>
           )
         }
@@ -123,7 +125,7 @@ export function ActivityTable({
                   key={h}
                   className="px-3 py-2 text-[9px] font-normal uppercase tracking-label text-dim"
                 >
-                  {h}
+                  {t(h)}
                 </th>
               ))}
             </tr>
@@ -143,7 +145,7 @@ export function ActivityTable({
                   const b = badge(event.kind);
                   const wallet =
                     event.kind === "seed"
-                      ? "—"
+                      ? EMPTY
                       : event.kind === "mass"
                         ? event.caller
                         : event.wallet;
@@ -171,7 +173,7 @@ export function ActivityTable({
                         <span
                           className={`border px-1.5 py-0.5 text-[9px] tracking-label ${b.cls}`}
                         >
-                          {b.label}
+                          {t(b.label)}
                         </span>
                       </td>
                       <td className="mono whitespace-nowrap px-3 py-2.5 text-[11px] text-fg">
@@ -187,8 +189,8 @@ export function ActivityTable({
                         )}
                       </td>
                       <td className="mono whitespace-nowrap px-3 py-2.5 text-[11px] text-dim">
-                        {wallet === "—" ? (
-                          "—"
+                        {wallet === EMPTY ? (
+                          EMPTY
                         ) : (
                           <a
                             href={`https://explorer.solana.com/address/${wallet}?cluster=devnet`}
@@ -205,13 +207,16 @@ export function ActivityTable({
                 })}
           </tbody>
         </table>
-        {!loading && list.length === 0 ? <Empty text={emptyText} /> : null}
+        {!loading && list.length === 0 ? <Empty text={t(emptyText)} /> : null}
       </div>
 
       {list.length > 0 ? (
         <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
           <span>
-            Menampilkan {shown.length} dari {list.length} event
+            {t("Menampilkan {shown} dari {total} event", {
+              shown: shown.length,
+              total: list.length,
+            })}
           </span>
           {visible < list.length ? (
             <button
@@ -219,10 +224,10 @@ export function ActivityTable({
               onClick={() => setVisible((v) => v + rows)}
               className="chip py-1"
             >
-              Muat lebih
+              {t("Muat lebih")}
             </button>
           ) : (
-            <span>Semua event termuat</span>
+            <span>{t("Semua event termuat")}</span>
           )}
         </footer>
       ) : null}

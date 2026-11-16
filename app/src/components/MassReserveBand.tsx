@@ -8,13 +8,14 @@ import {
 } from "@/lib/constants";
 import { fmtAgo, fmtPct, fmtSolLamports, fmtTokenInt } from "@/lib/format";
 import type { HistoryEvent, PoolSnapshot } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 import { Panel, PanelHeader } from "./ui";
 
 const THRESHOLD = MIN_MASS_SOL + RENT_EXEMPT_MIN;
 
 /**
  * Ringkasan Mass Reserve untuk Overview: sisa reserve, yang sudah masuk pool,
- * dan kesiapan fee vault. Sengaja ringkas — detail aturan ada di /mass.
+ * dan kesiapan fee vault. Sengaja ringkas; detail aturan ada di /mass.
  */
 export function MassReserveBand({
   snapshot,
@@ -23,6 +24,7 @@ export function MassReserveBand({
   snapshot: PoolSnapshot;
   events: HistoryEvent[];
 }) {
+  const { t } = useI18n();
   const initial = MASS_RESERVE_SUPPLY_RAW;
   const reserve = BigInt(snapshot.vaults.massReserveAmount);
   const used = reserve < initial ? initial - reserve : 0n;
@@ -37,56 +39,63 @@ export function MassReserveBand({
   return (
     <Panel className="flex h-full flex-col">
       <PanelHeader
-        title="Mass Reserve"
-        subtitle="likuiditas permanen"
+        title={t("Mass Reserve")}
+        subtitle={t("likuiditas permanen")}
         right={
           <span
             className={`border px-1.5 py-0.5 text-[8px] uppercase tracking-label ${
               ready ? "border-gold/50 text-gold" : "border-line text-dim"
             }`}
-            title="Ambang add_mass: 1 SOL + rent"
+            title={t("Ambang add_mass: 1 SOL + rent")}
           >
-            {ready ? "siap add_mass" : "menunggu fee"}
+            {ready ? t("siap add_mass") : t("menunggu fee")}
           </span>
         }
       />
 
       <div className="grid grid-cols-1 gap-px bg-line sm:grid-cols-3">
         <div className="bg-ink-1 px-4 py-3">
-          <div className="label">Sisa reserve</div>
+          <div className="label">{t("Sisa reserve")}</div>
           <div className="mono mt-1.5 truncate text-[17px] leading-none text-gold">
             {fmtTokenInt(reserve)} INRT
           </div>
           <div className="mt-1.5 text-[10px] text-dim">
-            {fmtPct(usedBps)} dari {fmtTokenInt(initial)} sudah masuk pool
+            {t("{pct} dari {supply} sudah masuk pool", {
+              pct: fmtPct(usedBps),
+              supply: fmtTokenInt(initial),
+            })}
           </div>
         </div>
         <div className="bg-ink-1 px-4 py-3">
-          <div className="label">Sudah masuk pool</div>
+          <div className="label">{t("Sudah masuk pool")}</div>
           <div className="mono mt-1.5 truncate text-[17px] leading-none text-fg">
             {fmtSolLamports(snapshot.totalMassSol)} SOL
           </div>
           <div className="mt-1.5 truncate text-[10px] text-dim">
-            {fmtTokenInt(snapshot.totalMassToken)} INRT · {massEvents}{" "}
-            add_mass tercatat
+            {t("{n} INRT · {m} add_mass tercatat", {
+              n: fmtTokenInt(snapshot.totalMassToken),
+              m: massEvents,
+            })}
           </div>
         </div>
         <div className="bg-ink-1 px-4 py-3">
-          <div className="label">Fee vault</div>
+          <div className="label">{t("Fee vault")}</div>
           <div className="mono mt-1.5 truncate text-[17px] leading-none text-fg">
             {fmtSolLamports(fee)} SOL
           </div>
           <div className="mt-1.5 truncate text-[10px] text-dim">
             {ready
-              ? "cukup untuk add_mass"
-              : `kurang ${fmtSolLamports(missing)} SOL`}
+              ? t("cukup untuk add_mass")
+              : t("kurang {amount} SOL", {
+                  amount: fmtSolLamports(missing),
+                })}
           </div>
         </div>
       </div>
 
       <div className="px-4 py-3">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="label">Reserve yang terpakai</span>
+          <span className="label">{t("Reserve yang terpakai")}</span>
           <span className="mono text-[9px] text-dim">
             {fmtTokenInt(used)} / {fmtTokenInt(initial)} INRT
           </span>
@@ -97,7 +106,7 @@ export function MassReserveBand({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(usedRatio * 100)}
-          aria-label="Mass Reserve yang sudah masuk pool"
+          aria-label={t("Mass Reserve yang sudah masuk pool")}
         >
           <div
             className="h-full bg-gold"
@@ -105,18 +114,20 @@ export function MassReserveBand({
           />
         </div>
         <p className="mt-2 text-[10px] leading-relaxed text-dim">
-          Tidak ada instruksi withdraw. Token hanya keluar dari reserve lewat{" "}
-          <span className="mono text-muted">add_mass</span>, yang justru
-          menambah likuiditas pool.
+          {t(
+            "Tidak ada instruksi withdraw. Token hanya keluar dari reserve lewat add_mass, yang justru menambah likuiditas pool.",
+          )}
         </p>
       </div>
 
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
         <span>
-          Mass terakhir: {everMass ? fmtAgo(snapshot.lastMassTs) : "belum pernah"}
+          {t("Mass terakhir: {value}", {
+            value: everMass ? fmtAgo(snapshot.lastMassTs) : t("belum pernah"),
+          })}
         </span>
         <Link href="/mass" className="text-gold hover:underline">
-          Aturan & riwayat →
+          {t("Aturan & riwayat →")}
         </Link>
       </div>
     </Panel>

@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "./LanguageProvider";
 
 export function CopyButton({
   value,
-  label = "Salin",
+  label,
 }: {
   value: string;
   label?: string;
 }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -29,14 +31,15 @@ export function CopyButton({
     }
   }
 
+  const idle = label ?? t("Salin");
   return (
     <button
       type="button"
       onClick={() => void copy()}
-      aria-label={`${copied ? "Tersalin" : label}: ${value}`}
+      aria-label={`${copied ? t("Tersalin") : idle}: ${value}`}
       className={`chip py-1 ${copied ? "chip-active" : ""}`}
     >
-      {copied ? "Tersalin" : label}
+      {copied ? t("Tersalin") : idle}
     </button>
   );
 }

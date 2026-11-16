@@ -1,6 +1,9 @@
+"use client";
+
 import { MIN_MASS_SOL, RENT_EXEMPT_MIN } from "@/lib/constants";
 import { fmtAgo, fmtPct, fmtSolLamports, fmtTokenInt } from "@/lib/format";
 import type { PoolSnapshot } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 import { Panel, PanelHeader } from "./ui";
 
 function LinkRow({
@@ -52,6 +55,7 @@ function Row({
 }
 
 export function PoolPanel({ snapshot }: { snapshot: PoolSnapshot }) {
+  const { t } = useI18n();
   const tokenReserve = BigInt(snapshot.tokenReserve);
   const solReserve = BigInt(snapshot.solReserve);
   const k = tokenReserve * solReserve;
@@ -62,8 +66,8 @@ export function PoolPanel({ snapshot }: { snapshot: PoolSnapshot }) {
   return (
     <Panel>
       <PanelHeader
-        title="Pool"
-        subtitle="constant product"
+        title={t("Pool")}
+        subtitle={t("constant product")}
         right={
           <span
             className={`border px-1.5 py-0.5 text-[9px] tracking-label ${
@@ -71,46 +75,49 @@ export function PoolPanel({ snapshot }: { snapshot: PoolSnapshot }) {
                 ? "border-gold/50 text-gold"
                 : "border-line text-muted"
             }`}
-            title="Butuh fee vault ≥ 1 SOL + rent"
+            title={t("Butuh fee vault ≥ 1 SOL + rent")}
           >
-            {massReady ? "MASS SIAP" : "MASS MENUNGGU"}
+            {massReady ? t("MASS SIAP") : t("MASS MENUNGGU")}
           </span>
         }
       />
       <div className="divide-y divide-lineSoft">
         <Row
-          label="Fee swap"
-          value={`${fmtPct(snapshot.feeBps, 2)} → massa`}
+          label={t("Fee swap")}
+          value={t("{pct} → massa", { pct: fmtPct(snapshot.feeBps, 2) })}
           accent
         />
-        <Row label="Launch slot" value={snapshot.launchSlot} />
+        <Row label={t("Launch slot")} value={snapshot.launchSlot} />
         <Row
-          label="SOL reserve"
+          label={t("SOL reserve")}
           value={`${fmtSolLamports(solReserve)} SOL`}
         />
         <Row
-          label="Token reserve"
+          label={t("Token reserve")}
           value={`${fmtTokenInt(tokenReserve)} INRT`}
         />
-        <Row label="Invariant k" value={Number(k).toExponential(6)} />
-        <Row label="Interval massa" value={`${snapshot.massInterval} detik`} />
+        <Row label={t("Invariant k")} value={Number(k).toExponential(6)} />
         <Row
-          label="Mass terakhir"
-          value={massEver ? fmtAgo(snapshot.lastMassTs) : "belum pernah"}
+          label={t("Interval massa")}
+          value={t("{n} detik", { n: snapshot.massInterval })}
         />
         <Row
-          label="Total massa"
+          label={t("Mass terakhir")}
+          value={massEver ? fmtAgo(snapshot.lastMassTs) : t("belum pernah")}
+        />
+        <Row
+          label={t("Total massa")}
           value={`${fmtSolLamports(snapshot.totalMassSol)} SOL / ${fmtTokenInt(
             snapshot.totalMassToken,
           )} INRT`}
         />
         <LinkRow label="Mint" address={snapshot.mint} />
         <LinkRow label="Pool" address={snapshot.pool} />
-        <LinkRow label="Token vault" address={snapshot.tokenVault} />
-        <LinkRow label="SOL vault" address={snapshot.solVault} />
-        <LinkRow label="Fee vault" address={snapshot.feeVault} />
+        <LinkRow label={t("Token vault")} address={snapshot.tokenVault} />
+        <LinkRow label={t("SOL vault")} address={snapshot.solVault} />
+        <LinkRow label={t("Fee vault")} address={snapshot.feeVault} />
         <LinkRow
-          label="Mass reserve"
+          label={t("Mass reserve")}
           address={snapshot.massReserveVault}
         />
       </div>

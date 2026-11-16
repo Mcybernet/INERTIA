@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useI18n } from "./LanguageProvider";
 
 /** Akses cepat beli/jual di mobile: selalu terjangkau, tanpa scroll. */
 export function MobileTradeBar() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const path = (pathname ?? "").replace(/^\/INERTIA(?=\/|$)/, "");
   if (path.startsWith("/trade")) return null;
 
@@ -15,13 +17,13 @@ export function MobileTradeBar() {
         href="/trade#buy"
         className="flex h-12 items-center justify-center bg-ink text-[11px] uppercase tracking-label text-up"
       >
-        Beli INRT
+        {t("Beli INRT")}
       </Link>
       <Link
         href="/trade#sell"
         className="flex h-12 items-center justify-center bg-ink text-[11px] uppercase tracking-label text-down"
       >
-        Jual INRT
+        {t("Jual INRT")}
       </Link>
     </div>
   );

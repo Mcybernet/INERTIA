@@ -21,14 +21,17 @@ import {
   type Timeframe,
 } from "@/lib/candles";
 import {
+  EMPTY,
   fmtPct,
   fmtPrice,
   fmtSolNumber,
   fmtWibClock,
   fmtWibDateTime,
   fmtWibDay,
+  getFormatLocale,
 } from "@/lib/format";
 import type { Candle, HistoryEvent } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 
 const UP = "#4FA57A";
 const DOWN = "#C76A6A";
@@ -49,12 +52,20 @@ function timeframeReady(timeframe: Timeframe, spanSeconds: number): boolean {
   return timeframe.minSpan === 0 || spanSeconds >= timeframe.minSpan;
 }
 
-function timeframeHint(timeframe: Timeframe, spanSeconds: number): string {
+function timeframeHint(
+  timeframe: Timeframe,
+  spanSeconds: number,
+  t: (text: string, vars?: Record<string, string | number>) => string,
+): string {
   const need = Math.round(timeframe.minSpan / 86_400);
-  const have = (Math.max(0, spanSeconds) / 86_400).toLocaleString("id-ID", {
-    maximumFractionDigits: 1,
-  });
-  return `${timeframe.label} — butuh riwayat ${need} hari (sekarang ${have} hari)`;
+  const have = (Math.max(0, spanSeconds) / 86_400).toLocaleString(
+    getFormatLocale(),
+    { maximumFractionDigits: 1 },
+  );
+  return t(
+    "{label} · butuh riwayat {need} hari (sekarang {have} hari)",
+    { label: t(timeframe.label), need, have },
+  );
 }
 
 function OhlcItem({
@@ -87,6 +98,7 @@ export default function PriceChart({
   progress?: { done: number; total: number } | null;
   heightClass?: string;
 }) {
+  const { lang, t } = useI18n();
   const [timeframe, setTimeframe] = useState<number>(DEFAULT_TIMEFRAME);
   const [candles, setCandles] = useState<Candle[]>([]);
   const [candlesTf, setCandlesTf] = useState<number>(DEFAULT_TIMEFRAME);
@@ -215,6 +227,11 @@ export default function PriceChart({
     last && first && first.open > 0
       ? ((last.close - first.open) / first.open) * 100
       : 0;
+  const shownChange =
+    shown && shown.open > 0
+      ? ((shown.close - shown.open) / shown.open) * 100
+      : 0;
+  const shownUp = shownChange >= 0;
   const volume = candles.reduce((acc, candle) => acc + candle.volume, 0);
   const up = change >= 0;
   const activeMeta = TIMEFRAMES.find((tf) => tf.seconds === timeframe);
@@ -264,13 +281,13 @@ export default function PriceChart({
         horzLine: { color: "#3A3A44", labelBackgroundColor: "#E0A64B" },
       },
       localization: {
-        locale: "id-ID",
+        locale: lang === "en" ? "en-US" : "id-ID",
         timeFormatter: (time: Time) => {
           const ts = Number(time);
           return Number.isFinite(ts) ? fmtWibDateTime(ts) : "";
         },
         priceFormatter: (value: number) =>
-          value.toLocaleString("id-ID", {
+          value.toLocaleString(getFormatLocale(), {
             minimumFractionDigits: 9,
             maximumFractionDigits: 9,
           }),
@@ -307,6 +324,13 @@ export default function PriceChart({
       volumeRef.current = null;
     };
   }, []);
+
+  // Locale chart (angka & tanggal) mengikuti bahasa aktif.
+  useEffect(() => {
+    chartRef.current?.applyOptions({
+      localization: { locale: lang === "en" ? "en-US" : "id-ID" },
+    });
+  }, [lang]);
 
   // Crosshair: legend OHLC mengikuti candle yang ditunjuk, lalu kembali ke
   // candle terakhir saat pointer keluar.
@@ -478,10 +502,10 @@ export default function PriceChart({
     <section className="panel">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-4 py-3">
         <div>
-          <div className="label">Harga INRT / SOL</div>
+          <div className="label">{t("Harga INRT / SOL")}</div>
           <div className="mt-1.5 flex flex-wrap items-baseline gap-3">
             <span className="mono text-[22px] leading-none text-fg">
-              {last ? `${candlePrice(last.close)} SOL` : "—"}
+              {last ? `${candlePrice(last.close)} SOL` : EMPTY}
             </span>
             <span
               className={`mono text-[11px] ${up ? "text-up" : "text-down"}`}
@@ -490,7 +514,9 @@ export default function PriceChart({
               {fmtPct(Math.round(Math.abs(change) * 100))}
             </span>
             <span className="text-[10px] text-dim">
-              dalam {activeMeta?.label ?? "—"}
+              {t("dalam {label}", {
+                label: activeMeta ? t(activeMeta.label) : EMPTY,
+              })}
             </span>
           </div>
         </div>
@@ -506,8 +532,8 @@ export default function PriceChart({
                   disabled={!ready || pending !== null}
                   title={
                     ready
-                      ? `${tf.label} · bucket WIB`
-                      : timeframeHint(tf, spanSeconds)
+                      ? t("{label} · bucket WIB", { label: t(tf.label) })
+                      : timeframeHint(tf, spanSeconds, t)
                   }
                   onClick={() => selectTimeframe(tf)}
                   className={`px-2.5 py-1 text-[10px] tracking-label transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
@@ -516,7 +542,7 @@ export default function PriceChart({
                       : "bg-ink-1 text-muted enabled:hover:text-fg"
                   }`}
                 >
-                  {tf.label}
+                  {t(tf.label)}
                 </button>
               );
             })}
@@ -529,10 +555,10 @@ export default function PriceChart({
               type="button"
               onClick={goToLaunch}
               disabled={!launchTs || empty || pending !== null}
-              title="Pindah ke candle pertama sejak pool dibuat"
+              title={t("Pindah ke candle pertama sejak pool dibuat")}
               className="uppercase tracking-label text-dim transition-colors hover:text-gold disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Sejak launch
+              {t("Sejak launch")}
             </button>
           </div>
         </div>
@@ -549,6 +575,22 @@ export default function PriceChart({
             value={shown.close}
             tone={shown.close >= shown.open ? "text-up" : "text-down"}
           />
+          <span
+            className="flex items-baseline gap-1.5"
+            title={t("Perubahan candle (close vs open)")}
+          >
+            <span className="text-[9px] uppercase tracking-label text-dim">
+              Δ
+            </span>
+            <span
+              className={`mono text-[10px] ${
+                shownUp ? "text-up" : "text-down"
+              }`}
+            >
+              {shownUp ? "+" : ""}
+              {fmtPct(Math.round(Math.abs(shownChange) * 100))}
+            </span>
+          </span>
           <span className="flex items-baseline gap-1.5">
             <span className="text-[9px] uppercase tracking-label text-dim">
               V
@@ -558,7 +600,9 @@ export default function PriceChart({
             </span>
           </span>
           <span className="text-[9px] uppercase tracking-label text-dim">
-            {shown.trades} trade
+            {shown.trades > 0
+              ? t("{n} trade", { n: shown.trades })
+              : null}
             {shown.mass > 0 ? ` · ${shown.mass} mass` : ""}
             {shown.launch ? " · launch" : ""}
             {shown.synthetic ? " · flat" : ""}
@@ -571,38 +615,45 @@ export default function PriceChart({
         {slowPending ? (
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center px-4 py-2">
             <span className="border border-line bg-ink-1 px-3 py-1 text-[10px] uppercase tracking-label text-gold">
-              Menyiapkan candle {pendingLabel ?? ""}…
+              {t("Menyiapkan candle {label}…", {
+                label: pendingLabel ? t(pendingLabel) : "",
+              })}
             </span>
           </div>
         ) : null}
         {!loading && empty && !initializing ? (
           <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-label text-dim">
-            Belum ada candle — swap pertama akan muncul di sini
+            {t("Belum ada candle · swap pertama akan muncul di sini")}
           </div>
         ) : null}
         {loading && empty ? (
           <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-label text-dim">
-            Memuat candle…
+            {t("Memuat candle…")}
           </div>
         ) : null}
         {initializing ? (
           <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-label text-dim">
-            Menyiapkan candle…
+            {t("Menyiapkan candle…")}
           </div>
         ) : null}
       </div>
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-        <span title="Bucket tanpa transaksi tetap digambar sebagai candle flat">
-          Waktu WIB · {candles.length} candle ·{" "}
-          {candles.filter((candle) => candle.synthetic).length} flat
+        <span title={t("Bucket tanpa transaksi tetap digambar sebagai candle flat")}>
+          {t("Waktu WIB · {n} candle · {m} flat", {
+            n: candles.length,
+            m: candles.filter((candle) => candle.synthetic).length,
+          })}
         </span>
         {progress ? (
           <span className="text-gold">
-            Memuat riwayat {progress.done}/{progress.total} tx
+            {t("Memuat riwayat {done}/{total} tx", {
+              done: progress.done,
+              total: progress.total,
+            })}
           </span>
         ) : (
-          <span>Fee 0,30% tidak masuk reserve · k naik tipis</span>
+          <span>{t("Fee 0,30% tidak masuk reserve · k naik tipis")}</span>
         )}
       </footer>
     </section>

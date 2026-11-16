@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ActivityTable } from "@/components/ActivityTable";
 import { useData } from "@/components/DataProvider";
+import { useI18n } from "@/components/LanguageProvider";
 import { PageIntro, StatCard, StatGrid } from "@/components/PageIntro";
 import { Panel, PanelHeader, Skeleton } from "@/components/ui";
 import {
@@ -58,6 +59,7 @@ function Bar({
 }
 
 function MassBody({ snapshot }: { snapshot: PoolSnapshot }) {
+  const { t } = useI18n();
   const reserve = BigInt(snapshot.vaults.massReserveAmount);
   const initial = MASS_RESERVE_SUPPLY_RAW;
   const used = reserve < initial ? initial - reserve : 0n;
@@ -70,37 +72,44 @@ function MassBody({ snapshot }: { snapshot: PoolSnapshot }) {
     <>
       <StatGrid>
         <StatCard
-          label="Mass Reserve"
+          label={t("Mass Reserve")}
           value={`${fmtTokenInt(reserve)} INRT`}
-          sub={`${fmtPct(usedBps)} dari ${fmtTokenInt(initial)} sudah masuk pool`}
+          sub={t("{pct} dari {supply} sudah masuk pool", {
+            pct: fmtPct(usedBps),
+            supply: fmtTokenInt(initial),
+          })}
           accent
         />
         <StatCard
-          label="Total massa"
+          label={t("Total massa")}
           value={`${fmtSolLamports(snapshot.totalMassSol)} SOL`}
-          sub={`${fmtTokenInt(snapshot.totalMassToken)} INRT ditambahkan`}
+          sub={t("{n} INRT ditambahkan", {
+            n: fmtTokenInt(snapshot.totalMassToken),
+          })}
         />
         <StatCard
-          label="Fee vault"
+          label={t("Fee vault")}
           value={`${fmtSolLamports(fee)} SOL`}
-          sub={ready ? "siap dipanggil add_mass" : "minimum 1 SOL + rent"}
+          sub={
+            ready ? t("siap dipanggil add_mass") : t("minimum 1 SOL + rent")
+          }
         />
         <StatCard
-          label="Mass terakhir"
+          label={t("Mass terakhir")}
           value={
             BigInt(snapshot.totalMassSol) > 0n
               ? fmtAgo(snapshot.lastMassTs)
-              : "belum pernah"
+              : t("belum pernah")
           }
-          sub={`interval ${snapshot.massInterval} detik`}
+          sub={t("interval {n} detik", { n: snapshot.massInterval })}
         />
       </StatGrid>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Panel>
           <PanelHeader
-            title="Reserve terpakai"
-            subtitle="10.000.000 INRT awal"
+            title={t("Reserve terpakai")}
+            subtitle={t("10.000.000 INRT awal")}
             right={
               <span className="mono text-[10px] text-dim">
                 {fmtTokenInt(used)} INRT
@@ -110,53 +119,62 @@ function MassBody({ snapshot }: { snapshot: PoolSnapshot }) {
           <Bar
             value={Number(used)}
             max={Number(initial)}
-            label="Masuk pool lewat add_mass"
-            note="Mass Reserve tidak punya instruksi withdraw; hanya add_mass yang bisa memindahkannya."
+            label={t("Masuk pool lewat add_mass")}
+            note={t(
+              "Mass Reserve tidak punya instruksi withdraw; hanya add_mass yang bisa memindahkannya.",
+            )}
             accent
           />
           <Bar
             value={Number(fee)}
             max={Number(THRESHOLD)}
-            label="Fee vault menuju ambang add_mass"
-            note={`Ambang = ${fmtSolLamports(THRESHOLD)} SOL (1 SOL + rent). ${
-              ready ? "Sudah terpenuhi." : "Belum terpenuhi."
-            }`}
+            label={t("Fee vault menuju ambang add_mass")}
+            note={t(
+              ready
+                ? "Ambang = {amount} SOL (1 SOL + rent). Sudah terpenuhi."
+                : "Ambang = {amount} SOL (1 SOL + rent). Belum terpenuhi.",
+              { amount: fmtSolLamports(THRESHOLD) },
+            )}
           />
         </Panel>
 
         <Panel>
-          <PanelHeader title="Aturan add_mass" subtitle="dikunci di program" />
+          <PanelHeader
+            title={t("Aturan add_mass")}
+            subtitle={t("dikunci di program")}
+          />
           <ul className="divide-y divide-lineSoft text-[11px] leading-relaxed text-muted">
             <li className="flex justify-between gap-3 px-4 py-2.5">
-              <span>Minimum SOL per panggilan</span>
+              <span>{t("Minimum SOL per panggilan")}</span>
               <span className="mono text-fg">1 SOL</span>
             </li>
             <li className="flex justify-between gap-3 px-4 py-2.5">
-              <span>Maksimum token per panggilan</span>
+              <span>{t("Maksimum token per panggilan")}</span>
               <span className="mono text-fg">
                 {fmtTokenInt(cap)} INRT
               </span>
             </li>
             <li className="flex justify-between gap-3 px-4 py-2.5">
-              <span>Cap dari sisa reserve</span>
+              <span>{t("Cap dari sisa reserve")}</span>
               <span className="mono text-fg">{fmtPct(MASS_CAP_BPS, 0)}</span>
             </li>
             <li className="flex justify-between gap-3 px-4 py-2.5">
-              <span>Toleransi pergeseran harga</span>
+              <span>{t("Toleransi pergeseran harga")}</span>
               <span className="mono text-fg">
                 {MASS_RATIO_TOL_BPS} bps
               </span>
             </li>
             <li className="flex justify-between gap-3 px-4 py-2.5">
-              <span>Sumber dana</span>
+              <span>{t("Sumber dana")}</span>
               <span className="mono text-fg">fee vault</span>
             </li>
           </ul>
           <div className="border-t border-line px-4 py-3 text-[10px] leading-relaxed text-dim">
-            Butuh volume ±333 SOL untuk mengumpulkan 1 SOL fee pada 0,30%. Di
-            Devnet, fee vault bisa diisi langsung untuk menguji keeper.{" "}
+            {t(
+              "Butuh volume ±333 SOL untuk mengumpulkan 1 SOL fee pada 0,30%. Di Devnet, fee vault bisa diisi langsung untuk menguji keeper.",
+            )}{" "}
             <Link href="/tokenomics#mass" className="text-gold hover:underline">
-              Detail kebijakan massa →
+              {t("Detail kebijakan massa →")}
             </Link>
           </div>
         </Panel>
@@ -167,13 +185,16 @@ function MassBody({ snapshot }: { snapshot: PoolSnapshot }) {
 
 export function MassView() {
   const { pool, history, events, progress } = useData();
+  const { t } = useI18n();
 
   return (
     <>
       <PageIntro
         kicker="Mass Reserve · on-chain"
-        title="Liquidity yang tumbuh, bukan ditarik"
-        description="Semua fee swap berakhir di sini. add_mass menukar fee vault menjadi token dari Mass Reserve dan menambahkannya ke pool permanen."
+        title={t("Liquidity yang tumbuh, bukan ditarik")}
+        description={t(
+          "Semua fee swap berakhir di sini. add_mass menukar fee vault menjadi token dari Mass Reserve dan menambahkannya ke pool permanen.",
+        )}
         right={
           pool.data ? (
             <span
@@ -184,8 +205,8 @@ export function MassView() {
               }`}
             >
               {BigInt(pool.data.vaults.feeVaultSol) >= THRESHOLD
-                ? "Mass siap"
-                : "Mass menunggu"}
+                ? t("Mass siap")
+                : t("Mass menunggu")}
             </span>
           ) : null
         }
@@ -215,13 +236,18 @@ export function MassView() {
           rows={20}
           filterable
           initialFilter="mass"
-          title="Riwayat add_mass"
+          title={t("Riwayat add_mass")}
           subtitle={
             progress
-              ? `event MassEvent · ${progress.done}/${progress.total} tx`
-              : "event MassEvent"
+              ? t("event MassEvent · {done}/{total} tx", {
+                  done: progress.done,
+                  total: progress.total,
+                })
+              : t("event MassEvent")
           }
-          emptyText="Belum ada add_mass — fee vault masih di bawah ambang"
+          emptyText={t(
+            "Belum ada add_mass · fee vault masih di bawah ambang",
+          )}
           scroll={false}
         />
       </div>

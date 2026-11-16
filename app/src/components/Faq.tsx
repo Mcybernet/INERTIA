@@ -1,9 +1,12 @@
+"use client";
+
+import { useI18n } from "./LanguageProvider";
 import { Panel, PanelHeader } from "./ui";
 
 const ITEMS = [
   {
     q: "Kenapa harga kadang tidak bergerak?",
-    a: "Harga hanya berubah saat ada swap. Jam tanpa transaksi tetap digambar sebagai candle flat, jadi grafik tidak bolong — bukan tanda chart rusak.",
+    a: "Harga hanya berubah saat ada swap. Jam tanpa transaksi tetap digambar sebagai candle flat, jadi grafik tidak bolong. Itu bukan tanda chart rusak.",
   },
   {
     q: "Siapa yang bisa menarik likuiditas?",
@@ -20,9 +23,13 @@ const ITEMS = [
 ];
 
 export function Faq() {
+  const { t } = useI18n();
   return (
     <Panel className="flex h-full flex-col">
-      <PanelHeader title="Pertanyaan singkat" subtitle="4 hal" />
+      <PanelHeader
+        title={t("Pertanyaan singkat")}
+        subtitle={t("4 hal")}
+      />
       <div className="flex-1">
         {ITEMS.map((item) => (
           <details
@@ -30,7 +37,7 @@ export function Faq() {
             className="group border-b border-lineSoft last:border-0"
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[11px] leading-snug text-fg transition-colors hover:text-gold [&::-webkit-details-marker]:hidden">
-              {item.q}
+              {t(item.q)}
               <span className="mono shrink-0 text-gold group-open:hidden">
                 +
               </span>
@@ -39,7 +46,7 @@ export function Faq() {
               </span>
             </summary>
             <p className="px-4 pb-3 text-[10px] leading-relaxed text-muted">
-              {item.a}
+              {t(item.a)}
             </p>
           </details>
         ))}

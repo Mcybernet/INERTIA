@@ -1,86 +1,126 @@
-const id = "id-ID";
+export type FormatLang = "id" | "en";
 
-const intFmt = new Intl.NumberFormat(id, { maximumFractionDigits: 0 });
+/** Placeholder netral untuk nilai yang belum ada. */
+export const EMPTY = "-";
 
-const solFmt = new Intl.NumberFormat(id, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 4,
-});
+let formatLang: FormatLang = "id";
 
-const solFineFmt = new Intl.NumberFormat(id, {
-  minimumFractionDigits: 6,
-  maximumFractionDigits: 9,
-});
+/** Dipanggil provider bahasa sebelum render, supaya angka ikut bahasa aktif. */
+export function setFormatLang(next: FormatLang): void {
+  formatLang = next;
+}
+
+export function getFormatLocale(): string {
+  return formatLang === "en" ? "en-US" : "id-ID";
+}
+
+const numberCache = new Map<string, Intl.NumberFormat>();
+
+function nf(options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = `${formatLang}:${JSON.stringify(options)}`;
+  let formatter = numberCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(getFormatLocale(), options);
+    numberCache.set(key, formatter);
+  }
+  return formatter;
+}
+
+const dateCache = new Map<string, Intl.DateTimeFormat>();
+
+function df(
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  const key = `${locale}:${JSON.stringify(options)}`;
+  let formatter = dateCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, options);
+    dateCache.set(key, formatter);
+  }
+  return formatter;
+}
 
 export function fmtToken(raw: bigint | string, frac = 2): string {
   const value = Number(BigInt(raw)) / 1e6;
-  if (frac === 0) return intFmt.format(value);
-  return new Intl.NumberFormat(id, {
+  if (frac === 0) return nf({ maximumFractionDigits: 0 }).format(value);
+  return nf({
     minimumFractionDigits: Math.min(frac, 2),
     maximumFractionDigits: frac,
   }).format(value);
 }
 
 export function fmtTokenInt(raw: bigint | string): string {
-  return intFmt.format(Number(BigInt(raw)) / 1e6);
+  return nf({ maximumFractionDigits: 0 }).format(Number(BigInt(raw)) / 1e6);
 }
 
 export function fmtSolLamports(lamports: bigint | string | number): string {
   const sol = Number(lamports) / 1e9;
-  if (!Number.isFinite(sol)) return "—";
+  if (!Number.isFinite(sol)) return EMPTY;
   if (sol !== 0 && Math.abs(sol) < 0.01) {
-    return new Intl.NumberFormat(id, {
+    return nf({
       minimumFractionDigits: 6,
       maximumFractionDigits: 9,
     }).format(sol);
   }
-  return solFmt.format(sol);
+  return nf({
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(sol);
 }
 
 export function fmtSolNumber(sol: number, fine = false): string {
-  if (!Number.isFinite(sol)) return "—";
-  if (fine || Math.abs(sol) < 0.001) return solFineFmt.format(sol);
+  if (!Number.isFinite(sol)) return EMPTY;
+  if (fine || Math.abs(sol) < 0.001) {
+    return nf({
+      minimumFractionDigits: 6,
+      maximumFractionDigits: 9,
+    }).format(sol);
+  }
   if (Math.abs(sol) < 1) {
-    return new Intl.NumberFormat(id, {
+    return nf({
       minimumFractionDigits: 4,
       maximumFractionDigits: 6,
     }).format(sol);
   }
-  return solFmt.format(sol);
+  return nf({
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(sol);
 }
 
 /** Harga SOL per token dari nilai price_scaled (1e15). */
 export function fmtPrice(scaled: bigint | string): string {
   const value = Number(BigInt(scaled)) / 1e15;
-  if (value === 0) return "—";
+  if (value === 0) return EMPTY;
   const digits = value < 0.001 ? 9 : value < 1 ? 6 : 4;
-  return new Intl.NumberFormat(id, {
+  return nf({
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value);
 }
 
 export function fmtPct(bps: number, frac = 2): string {
-  return `${new Intl.NumberFormat(id, {
+  return `${nf({
     minimumFractionDigits: 0,
     maximumFractionDigits: frac,
   }).format(bps / 100)}%`;
 }
 
 export function fmtBps(bps: number): string {
-  return `${new Intl.NumberFormat(id, { maximumFractionDigits: 0 }).format(bps)} bps`;
+  return `${nf({ maximumFractionDigits: 0 }).format(bps)} bps`;
 }
 
 export function shortAddr(address: string, n = 4): string {
-  if (!address) return "—";
+  if (!address) return EMPTY;
   if (address.length <= n * 2 + 3) return address;
   return `${address.slice(0, n)}…${address.slice(-n)}`;
 }
 
 export function fmtTime(timestamp: number): string {
-  if (!timestamp) return "—";
+  if (!timestamp) return EMPTY;
   const d = new Date(timestamp * 1000);
-  return d.toLocaleTimeString(id, {
+  return d.toLocaleTimeString(getFormatLocale(), {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -88,8 +128,8 @@ export function fmtTime(timestamp: number): string {
 }
 
 export function fmtDateTime(timestamp: number): string {
-  if (!timestamp) return "—";
-  return new Date(timestamp * 1000).toLocaleString(id, {
+  if (!timestamp) return EMPTY;
+  return new Date(timestamp * 1000).toLocaleString(getFormatLocale(), {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -110,40 +150,44 @@ const wibClockFmt = new Intl.DateTimeFormat("en-GB", {
   hour12: false,
 });
 
-const wibDayFmt = new Intl.DateTimeFormat("id-ID", {
-  timeZone: WIB_TZ,
-  day: "2-digit",
-  month: "short",
-});
+function wibDayFmt(): Intl.DateTimeFormat {
+  return df(getFormatLocale(), {
+    timeZone: WIB_TZ,
+    day: "2-digit",
+    month: "short",
+  });
+}
 
 export function fmtWibClock(timestamp: number): string {
-  if (!timestamp) return "—";
+  if (!timestamp) return EMPTY;
   return wibClockFmt.format(new Date(timestamp * 1000));
 }
 
 export function fmtWibDay(timestamp: number): string {
-  if (!timestamp) return "—";
-  return wibDayFmt.format(new Date(timestamp * 1000));
+  if (!timestamp) return EMPTY;
+  return wibDayFmt().format(new Date(timestamp * 1000));
 }
 
 export function fmtWibDateTime(timestamp: number): string {
-  if (!timestamp) return "—";
+  if (!timestamp) return EMPTY;
   const date = new Date(timestamp * 1000);
-  return `${wibDayFmt.format(date)} ${wibClockFmt.format(date)} WIB`;
+  return `${wibDayFmt().format(date)} ${wibClockFmt.format(date)} WIB`;
 }
 
 export function fmtAgo(timestamp: number, now = Date.now() / 1000): string {
-  if (!timestamp) return "—";
+  if (!timestamp) return EMPTY;
   const diff = Math.max(0, Math.floor(now - timestamp));
-  if (diff < 60) return `${diff}s lalu`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m lalu`;
-  if (diff < 86_400) return `${Math.floor(diff / 3600)}j lalu`;
-  return `${Math.floor(diff / 86_400)}h lalu`;
+  const en = formatLang === "en";
+  const suffix = en ? "ago" : "lalu";
+  if (diff < 60) return `${diff}s ${suffix}`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ${suffix}`;
+  if (diff < 86_400) return `${Math.floor(diff / 3600)}${en ? "h" : "j"} ${suffix}`;
+  return `${Math.floor(diff / 86_400)}${en ? "d" : "h"} ${suffix}`;
 }
 
 export function fmtCompact(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return new Intl.NumberFormat(id, {
+  if (!Number.isFinite(value)) return EMPTY;
+  return nf({
     notation: "compact",
     maximumFractionDigits: 2,
   }).format(value);

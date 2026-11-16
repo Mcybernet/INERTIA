@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MobileTradeBar } from "@/components/MobileTradeBar";
 
-const TITLE = "INERTIA — INRT";
+const TITLE = "INERTIA · INRT";
 const DESCRIPTION =
   "Dashboard pool INERTIA (INRT) di Solana Devnet. Constant-product, fee 0,30% kembali ke massa pool.";
 const LOGO =

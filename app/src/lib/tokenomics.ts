@@ -11,7 +11,7 @@ export type Allocation = {
 /** Alokasi final 50.000.000 INRT (TOKENOMICS_INERTIA.md v1.1). */
 export const ALLOCATIONS: Allocation[] = [
   {
-    name: "Pool — The Mass",
+    name: "Pool · The Mass",
     raw: 9_600_000n * 1_000_000n,
     pct: "19,2%",
     note: "Terkunci permanen di pool, tanpa instruksi penarikan.",

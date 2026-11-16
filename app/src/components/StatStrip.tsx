@@ -1,3 +1,5 @@
+"use client";
+
 import { SUPPLY_RAW } from "@/lib/constants";
 import {
   fmtPrice,
@@ -7,6 +9,7 @@ import {
 } from "@/lib/format";
 import { fdvSol } from "@/lib/price";
 import type { PoolSnapshot } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 import { Skeleton } from "./ui";
 
 function Cell({
@@ -37,6 +40,8 @@ function Cell({
 }
 
 export function StatStrip({ snapshot }: { snapshot: PoolSnapshot | null }) {
+  const { t } = useI18n();
+
   if (!snapshot) {
     return (
       <div className="mt-3 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 xl:grid-cols-6">
@@ -62,37 +67,39 @@ export function StatStrip({ snapshot }: { snapshot: PoolSnapshot | null }) {
   return (
     <div className="mt-3 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-3 xl:grid-cols-6">
       <Cell
-        label="Harga"
+        label={t("Harga")}
         value={`${fmtPrice(snapshot.priceScaled)} SOL`}
-        sub="per INRT · constant product"
+        sub={t("per INRT · constant product")}
         accent
       />
       <Cell
         label="FDV"
         value={`${fmtSolNumber(fdv)} SOL`}
-        sub={`supply ${fmtTokenInt(SUPPLY_RAW)} INRT`}
+        sub={t("supply {n} INRT", { n: fmtTokenInt(SUPPLY_RAW) })}
       />
       <Cell
-        label="Likuiditas (2 sisi)"
+        label={t("Likuiditas (2 sisi)")}
         value={`${fmtSolNumber(liquidity)} SOL`}
         sub={`${fmtSolLamports(solReserve)} SOL + ${fmtTokenInt(
           snapshot.tokenReserve,
         )} INRT`}
       />
       <Cell
-        label="Mass Reserve"
+        label={t("Mass Reserve")}
         value={`${fmtTokenInt(snapshot.vaults.massReserveAmount)} INRT`}
-        sub={`${fmtSolLamports(snapshot.totalMassSol)} SOL sudah ditambahkan`}
+        sub={t("{amount} SOL sudah ditambahkan", {
+          amount: fmtSolLamports(snapshot.totalMassSol),
+        })}
       />
       <Cell
-        label="Fee Vault"
+        label={t("Fee Vault")}
         value={`${fmtSolLamports(snapshot.vaults.feeVaultSol)} SOL`}
-        sub={`fee ${snapshot.feeBps} bps → massa`}
+        sub={t("fee {n} bps → massa", { n: snapshot.feeBps })}
       />
       <Cell
-        label="Supply"
+        label={t("Supply")}
         value={`${fmtTokenInt(snapshot.supply)} INRT`}
-        sub="mint authority revoked"
+        sub={t("mint authority revoked")}
       />
     </div>
   );

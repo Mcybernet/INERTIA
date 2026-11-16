@@ -1,5 +1,8 @@
+"use client";
+
 import { fmtPct, fmtToken } from "@/lib/format";
 import type { HolderRow } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 import { Empty, Panel, PanelHeader, Skeleton } from "./ui";
 
 export function HoldersTable({
@@ -11,14 +14,15 @@ export function HoldersTable({
   loading: boolean;
   connectedOwner?: string;
 }) {
+  const { t } = useI18n();
   return (
     <Panel>
       <PanelHeader
-        title="Holder"
-        subtitle="top token account · Devnet"
+        title={t("Holder")}
+        subtitle={t("top token account · Devnet")}
         right={
           <span className="text-[10px] tracking-label text-dim">
-            vault · massa · owner · wallet
+            {t("vault · massa · owner · wallet")}
           </span>
         }
       />
@@ -31,7 +35,7 @@ export function HoldersTable({
                   key={h}
                   className="px-4 py-2 text-[9px] font-normal uppercase tracking-label text-dim"
                 >
-                  {h}
+                  {t(h)}
                 </th>
               ))}
             </tr>
@@ -74,7 +78,7 @@ export function HoldersTable({
                         ) : null}
                         {connectedOwner && row.owner === connectedOwner ? (
                           <span className="border border-line px-1 py-0.5 text-[8px] tracking-label text-muted">
-                            KAMU
+                            {t("KAMU")}
                           </span>
                         ) : null}
                       </div>
@@ -90,7 +94,7 @@ export function HoldersTable({
           </tbody>
         </table>
         {!loading && rows.length === 0 ? (
-          <Empty text="Belum ada holder" />
+          <Empty text={t("Belum ada holder")} />
         ) : null}
       </div>
     </Panel>

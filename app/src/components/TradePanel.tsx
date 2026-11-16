@@ -10,7 +10,7 @@ import {
   TX_DEADLINE_SECONDS,
   tierFor,
 } from "@/lib/constants";
-import { fmtSolNumber, fmtToken, fmtPct } from "@/lib/format";
+import { fmtSolNumber, fmtToken, fmtPct, EMPTY } from "@/lib/format";
 import { getPoolSnapshot } from "@/lib/data";
 import {
   priceImpactBps,
@@ -22,6 +22,7 @@ import type { PoolSnapshot } from "@/lib/types";
 import { buildSwapTransaction, explorerTx } from "@/lib/tx";
 import { formatUnitsInput, parseUnits } from "@/lib/units";
 import { useBalances } from "@/hooks/useBalances";
+import { useI18n } from "./LanguageProvider";
 import { Panel } from "./ui";
 
 type Side = "buy" | "sell";
@@ -32,18 +33,20 @@ type Notice = {
   sig?: string;
 };
 
-function friendlyError(message: string): string {
+type TFn = (text: string, vars?: Record<string, string | number>) => string;
+
+function friendlyError(message: string, t: TFn): string {
   if (/user rejected|rejected the request|User rejected/i.test(message)) {
-    return "Transaksi dibatalkan di wallet.";
+    return t("Transaksi dibatalkan di wallet.");
   }
   if (/insufficient (funds|lamports)|0x1\b/i.test(message)) {
-    return "Saldo tidak cukup untuk nominal + fee + sewa ATA.";
+    return t("Saldo tidak cukup untuk nominal + fee + sewa ATA.");
   }
   if (/slippage|SlippageExceeded/i.test(message)) {
-    return "Harga bergerak melewati slippage. Coba lagi atau naikkan slippage.";
+    return t("Harga bergerak melewati slippage. Coba lagi atau naikkan slippage.");
   }
   if (/blockhash not found|BlockhashNotFound/i.test(message)) {
-    return "Blockhash kedaluwarsa. Coba lagi.";
+    return t("Blockhash kedaluwarsa. Coba lagi.");
   }
   return message.length > 240 ? `${message.slice(0, 240)}…` : message;
 }
@@ -83,6 +86,7 @@ export function TradePanel({
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
   const balances = useBalances();
+  const { t } = useI18n();
 
   const [side, setSide] = useState<Side>(initialSide);
   const [amount, setAmount] = useState("");
@@ -121,9 +125,7 @@ export function TradePanel({
   }, [amount, side, slippage, snapshot]);
 
   const tier = tierFor(Number((balances.token * 10_000n) / SUPPLY_RAW));
-  const feePercent = `${(snapshot.feeBps / 100).toLocaleString("id-ID", {
-    minimumFractionDigits: 2,
-  })}%`;
+  const feePercent = fmtPct(snapshot.feeBps, 2);
 
   const insufficient =
     side === "buy"
@@ -162,7 +164,9 @@ export function TradePanel({
         error?: string;
       };
       if (fresh.error) {
-        throw new Error(fresh.error ?? "gagal memuat state pool terbaru");
+        throw new Error(
+          fresh.error ?? t("gagal memuat state pool terbaru"),
+        );
       }
 
       const tokenReserve = BigInt(fresh.tokenReserve);
@@ -175,7 +179,7 @@ export function TradePanel({
           fresh.feeBps,
           math.amountIn,
         );
-        if (!q) throw new Error("quote beli tidak tersedia pada state terbaru");
+        if (!q) throw new Error(t("quote beli tidak tersedia pada state terbaru"));
         out = q.out;
       } else {
         const q = quoteSell(
@@ -184,7 +188,7 @@ export function TradePanel({
           fresh.feeBps,
           math.amountIn,
         );
-        if (!q) throw new Error("quote jual tidak tersedia pada state terbaru");
+        if (!q) throw new Error(t("quote jual tidak tersedia pada state terbaru"));
         out = q.net;
       }
 
@@ -220,8 +224,12 @@ export function TradePanel({
         kind: "ok",
         text:
           side === "buy"
-            ? `Beli ${fmtSolNumber(Number(math.amountIn) / 1e9, true)} SOL berhasil dikonfirmasi.`
-            : `Jual ${fmtToken(math.amountIn, 6)} INRT berhasil dikonfirmasi.`,
+            ? t("Beli {amount} SOL berhasil dikonfirmasi.", {
+                amount: fmtSolNumber(Number(math.amountIn) / 1e9, true),
+              })
+            : t("Jual {amount} INRT berhasil dikonfirmasi.", {
+                amount: fmtToken(math.amountIn, 6),
+              }),
         sig: signature,
       });
       setAmount("");
@@ -232,6 +240,7 @@ export function TradePanel({
         kind: "err",
         text: friendlyError(
           err instanceof Error ? err.message : String(err),
+          t,
         ),
       });
     } finally {
@@ -259,7 +268,7 @@ export function TradePanel({
                 : "border-b-2 border-transparent text-muted hover:text-fg"
             }`}
           >
-            {s === "buy" ? "Beli" : "Jual"}
+            {s === "buy" ? t("Beli") : t("Jual")}
           </button>
         ))}
       </div>
@@ -267,13 +276,13 @@ export function TradePanel({
       <div className="space-y-3 p-4">
         <div className="flex items-center justify-between gap-2">
           <span className="label">
-            {side === "buy" ? "Bayar dengan SOL" : "Jual INRT"}
+            {side === "buy" ? t("Bayar dengan SOL") : t("Jual INRT")}
           </span>
           <button
             type="button"
             onClick={setMax}
             className="mono text-[10px] text-muted hover:text-gold"
-            title="Pakai saldo maksimum"
+            title={t("Pakai saldo maksimum")}
           >
             {side === "buy"
               ? `${fmtSolNumber(balances.sol)} SOL`
@@ -293,7 +302,7 @@ export function TradePanel({
             placeholder="0.00"
             className="input pr-16"
             aria-label={
-              side === "buy" ? "Jumlah SOL" : "Jumlah token INRT"
+              side === "buy" ? t("Jumlah SOL") : t("Jumlah token INRT")
             }
           />
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tracking-label text-muted">
@@ -331,57 +340,57 @@ export function TradePanel({
               }}
               className="chip py-1.5 text-center"
             >
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </div>
 
         <div className="divide-y divide-lineSoft border border-lineSoft">
           <DetailRow
-            label="Kamu bayar"
+            label={t("Kamu bayar")}
             value={
               math
                 ? side === "buy"
                   ? `${fmtSolNumber(Number(math.amountIn) / 1e9, true)} SOL`
                   : `${fmtToken(math.amountIn, 6)} INRT`
-                : "—"
+                : EMPTY
             }
           />
           <DetailRow
-            label="Kamu terima (estimasi)"
+            label={t("Kamu terima (estimasi)")}
             value={
               math
                 ? side === "buy"
                   ? `${fmtToken(math.out, 2)} INRT`
                   : `${fmtSolNumber(Number(math.out) / 1e9, true)} SOL`
-                : "—"
+                : EMPTY
             }
             strong
           />
           <DetailRow
-            label={`Fee ${feePercent}`}
+            label={t("Fee {pct}", { pct: feePercent })}
             value={
-              math ? `${fmtSolNumber(Number(math.fee) / 1e9, true)} SOL` : "—"
+              math ? `${fmtSolNumber(Number(math.fee) / 1e9, true)} SOL` : EMPTY
             }
           />
           <DetailRow
-            label="Price impact"
-            value={math ? fmtPct(math.impact) : "—"}
+            label={t("Price impact")}
+            value={math ? fmtPct(math.impact) : EMPTY}
           />
           <DetailRow
-            label={`Min. diterima (slip ${fmtPct(slippage, 1)})`}
+            label={t("Min. diterima (slip {pct})", { pct: fmtPct(slippage, 1) })}
             value={
               math
                 ? side === "buy"
                   ? `${fmtToken(math.minOut, 2)} INRT`
                   : `${fmtSolNumber(Number(math.minOut) / 1e9, true)} SOL`
-                : "—"
+                : EMPTY
             }
           />
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <span className="label">Slippage</span>
+          <span className="label">{t("Slippage")}</span>
           <div className="flex gap-1.5">
             {SLIPPAGE_OPTIONS.map((bps) => (
               <button
@@ -401,7 +410,7 @@ export function TradePanel({
         {publicKey ? (
           <div className="flex items-center justify-between border border-lineSoft px-3 py-2">
             <span className="text-[9px] uppercase tracking-label text-dim">
-              Tier wallet
+              {t("Tier wallet")}
             </span>
             <div className="flex items-center gap-2">
               <span
@@ -422,8 +431,9 @@ export function TradePanel({
 
         {insufficient ? (
           <p className="border border-down/40 px-3 py-2 text-[10px] leading-relaxed text-down">
-            Saldo tidak cukup. Sisakan SOL untuk fee jaringan dan sewa ATA
-            (sekitar 0,003 SOL).
+            {t(
+              "Saldo tidak cukup. Sisakan SOL untuk fee jaringan dan sewa ATA (sekitar 0,003 SOL).",
+            )}
           </p>
         ) : null}
 
@@ -459,18 +469,19 @@ export function TradePanel({
             }`}
           >
             {busy
-              ? "Memproses…"
+              ? t("Memproses…")
               : side === "buy"
-                ? "Beli INRT"
-                : "Jual INRT"}
+                ? t("Beli INRT")
+                : t("Jual INRT")}
           </button>
         ) : (
           <WalletMultiButton className="w-full" />
         )}
 
         <p className="text-[9px] leading-relaxed text-dim">
-          Devnet only. Transaksi ditandatangani di wallet kamu; app tidak pernah
-          meminta private key. Fee 0,30% masuk fee vault, bukan reserve.
+          {t(
+            "Devnet only. Transaksi ditandatangani di wallet kamu; app tidak pernah meminta private key. Fee 0,30% masuk fee vault, bukan reserve.",
+          )}
         </p>
       </div>
     </Panel>

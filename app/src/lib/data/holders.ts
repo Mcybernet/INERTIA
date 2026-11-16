@@ -81,7 +81,7 @@ async function topHolders(total: bigint): Promise<HolderRow[]> {
   const rows: HolderRow[] = [];
   infos.forEach((info, index) => {
     const fallback = largest.value[index];
-    const tokenAccount = fallback?.address.toBase58() ?? "—";
+    const tokenAccount = fallback?.address.toBase58() ?? "-";
     if (!info || info.data.length < 72) return;
 
     const owner = new PublicKey(info.data.subarray(32, 64)).toBase58();

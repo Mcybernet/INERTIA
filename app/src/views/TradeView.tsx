@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ActivityTable } from "@/components/ActivityTable";
 import { useData } from "@/components/DataProvider";
+import { useI18n } from "@/components/LanguageProvider";
 import { PageIntro, StatCard, StatGrid } from "@/components/PageIntro";
 import { PoolPanel } from "@/components/PoolPanel";
 import { TradePanel } from "@/components/TradePanel";
@@ -24,6 +25,7 @@ type Side = "buy" | "sell";
 
 export function TradeView() {
   const { pool, history, events, progress, refreshAll } = useData();
+  const { t } = useI18n();
   const [initialSide, setInitialSide] = useState<Side>("buy");
   const [panelKey, setPanelKey] = useState(0);
 
@@ -45,11 +47,13 @@ export function TradeView() {
     <>
       <PageIntro
         kicker="Trade · Devnet"
-        title="Beli atau jual INRT terhadap pool"
-        description="Transaksi ditandatangani di wallet kamu. Fee 0,30% dipotong dari input dan masuk fee vault — reserve pool tidak pernah dipakai untuk fee."
+        title={t("Beli atau jual INRT terhadap pool")}
+        description={t(
+          "Transaksi ditandatangani di wallet kamu. Fee 0,30% dipotong dari input dan masuk fee vault; reserve pool tidak pernah dipakai untuk fee.",
+        )}
         right={
           <Link href="/docs" className="btn btn-ghost">
-            Cara beli →
+            {t("Cara beli →")}
           </Link>
         }
       />
@@ -92,7 +96,10 @@ export function TradeView() {
         <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
           <PoolPanel snapshot={pool.data} />
           <Panel>
-            <PanelHeader title="Cara kerja" subtitle="constant product" />
+            <PanelHeader
+              title={t("Cara kerja")}
+              subtitle={t("constant product")}
+            />
             <ol className="divide-y divide-lineSoft text-[11px] leading-relaxed text-muted">
               {[
                 "Beli: SOL masuk reserve, token keluar dari vault. Harga naik sedikit.",
@@ -104,7 +111,7 @@ export function TradeView() {
                   <span className="mono text-[10px] text-gold">
                     0{index + 1}
                   </span>
-                  <span>{text}</span>
+                  <span>{t(text)}</span>
                 </li>
               ))}
             </ol>
@@ -117,20 +124,23 @@ export function TradeView() {
 
 function WalletHint() {
   const { publicKey } = useWallet();
+  const { t } = useI18n();
   if (publicKey) return null;
   return (
     <div className="border border-line bg-ink-1 px-4 py-3 text-[10px] leading-relaxed text-dim">
       <span className="uppercase tracking-label text-gold">
-        Wallet belum terhubung ·{" "}
+        {t("Wallet belum terhubung · ")}
       </span>
-      Hubungkan Phantom atau Solflare (mode Devnet) untuk melihat saldo, tier,
-      dan riwayat swap kamu.
+      {t(
+        "Hubungkan Phantom atau Solflare (mode Devnet) untuk melihat saldo, tier, dan riwayat swap kamu.",
+      )}
     </div>
   );
 }
 
 function PositionPanel({ snapshot }: { snapshot: PoolSnapshot }) {
   const balances = useBalances();
+  const { t } = useI18n();
   const bps = Number((balances.token * 10_000n) / SUPPLY_RAW);
   const tier = tierFor(bps);
   const valueSol =
@@ -139,28 +149,35 @@ function PositionPanel({ snapshot }: { snapshot: PoolSnapshot }) {
 
   return (
     <Panel>
-      <PanelHeader title="Posisi kamu" subtitle="wallet terhubung" />
+      <PanelHeader
+        title={t("Posisi kamu")}
+        subtitle={t("wallet terhubung")}
+      />
       <StatGrid>
         <StatCard
-          label="Saldo SOL"
+          label={t("Saldo SOL")}
           value={`${fmtSolNumber(balances.sol)} SOL`}
           sub="Devnet"
         />
         <StatCard
-          label="Saldo INRT"
+          label={t("Saldo INRT")}
           value={`${fmtToken(balances.token, 2)} INRT`}
-          sub={`${fmtPct(bps, 3)} supply`}
+          sub={t("{pct} supply", { pct: fmtPct(bps, 3) })}
           accent
         />
         <StatCard
-          label="Nilai estimasi"
+          label={t("Nilai estimasi")}
           value={`${fmtSolNumber(valueSol, true)} SOL`}
           sub={`@ ${fmtPrice(snapshot.priceScaled)} SOL`}
         />
         <StatCard
-          label="Tier"
+          label={t("Tier")}
           value={tier.name}
-          sub={bps > 0 ? "berdasarkan supply" : "butuh > 0,1% supply"}
+          sub={
+            bps > 0
+              ? t("berdasarkan supply")
+              : t("butuh > 0,1% supply")
+          }
         />
       </StatGrid>
     </Panel>
@@ -175,6 +192,7 @@ function WalletActivity({
   loading: boolean;
 }) {
   const { publicKey } = useWallet();
+  const { t } = useI18n();
   if (!publicKey) return null;
 
   const owner = publicKey.toBase58();
@@ -188,9 +206,9 @@ function WalletActivity({
       events={mine}
       loading={loading}
       rows={10}
-      title="Riwayat wallet"
-      subtitle={`${mine.length} swap dari wallet ini`}
-      emptyText="Belum ada swap dari wallet ini"
+      title={t("Riwayat wallet")}
+      subtitle={t("{n} swap dari wallet ini", { n: mine.length })}
+      emptyText={t("Belum ada swap dari wallet ini")}
       scroll={false}
     />
   );

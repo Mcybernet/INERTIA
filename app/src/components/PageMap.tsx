@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "./LanguageProvider";
 
 const PAGES = [
   {
@@ -39,12 +42,13 @@ const PAGES = [
 ];
 
 export function PageMap() {
+  const { t } = useI18n();
   return (
     <>
       <div className="mt-4 flex items-baseline justify-between gap-3">
-        <span className="label">Jelajahi</span>
+        <span className="label">{t("Jelajahi")}</span>
         <span className="text-[9px] uppercase tracking-label text-dim">
-          5 halaman
+          {t("{n} halaman", { n: PAGES.length })}
         </span>
       </div>
       <div className="mt-2 grid grid-cols-1 gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
@@ -55,17 +59,17 @@ export function PageMap() {
             className="group flex flex-col bg-ink-1 px-4 py-3 transition-colors hover:bg-ink-2"
           >
             <div className="flex items-center justify-between gap-2 text-[9px] uppercase tracking-label text-dim">
-              <span>{page.label}</span>
+              <span>{t(page.label)}</span>
               <span className="mono">{page.n}</span>
             </div>
             <div className="mt-1.5 text-[12px] uppercase tracking-label text-fg group-hover:text-gold">
               {page.title}
             </div>
             <p className="mt-1.5 text-[10px] leading-relaxed text-muted">
-              {page.text}
+              {t(page.text)}
             </p>
             <span className="mt-2 text-[9px] uppercase tracking-label text-dim group-hover:text-gold">
-              Buka →
+              {t("Buka →")}
             </span>
           </Link>
         ))}

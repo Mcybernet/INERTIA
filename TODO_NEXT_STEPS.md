@@ -1,8 +1,9 @@
 # TODO — Next Steps INERTIA
 
 Diperbarui: 17 November 2026
-Status: **pool v2 live di Devnet**; web live memakai mint/pool v2. Sisa pekerjaan:
-keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan operasional repo.
+Status: **pool v2 live di Devnet**; web live memakai mint/pool v2, dua bahasa
+(ID/EN). Sisa pekerjaan: keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan
+operasional repo.
 
 ## Status ringkas
 
@@ -68,7 +69,16 @@ keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan operasional repo.
 - [x] Penanda `LAUNCH` + tombol "Sejak launch" (pilih timeframe terkecil yang masih memuat launch).
 - [x] Timeframe 1H/1Mgg tampil abu-abu sampai riwayat 7/28 hari.
 - [x] Batas 1.500 bar per timeframe + cache per timeframe + precompute saat idle.
+- [x] Legend menampilkan persen perubahan candle yang di-hover (close vs open), warna up/down.
 - [ ] Timeframe terakhir disimpan di `localStorage` (`inrt:tf`).
+
+### FE-9 · Versi English
+- [x] Kamus ID→EN di `src/lib/i18n.ts` dengan fallback ke teks Indonesia.
+- [x] `LanguageProvider` + `useI18n()`; pilihan bahasa disimpan di `localStorage` (`inrt:lang`).
+- [x] Tombol `ID`/`EN` di header; `document.documentElement.lang` ikut berubah.
+- [x] Format angka/tanggal mengikuti locale (`id-ID` / `en-US`), termasuk jam chart.
+- [x] Semua halaman & komponen diterjemahkan; em dash `—` dihapus dari UI.
+- [x] Playwright: 7 halaman EN tanpa sisa kata Indonesia, switch dua arah, 360–1280 tanpa overflow.
 
 ### FE-8 · Verifikasi rilis frontend
 - [x] `npx tsc --noEmit` bersih; build statis 11 route sukses.
@@ -76,6 +86,7 @@ keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan operasional repo.
 - [x] Render progresif terukur: event pertama ±4 dtk, tabel penuh ±13 dtk, selesai ±39 dtk (27 tx).
 - [x] `scripts/deploy-pages.sh` + `gh api --method POST repos/Mcybernet/INERTIA/pages/builds` (gh-pages `8af34da`).
 - [x] Cek live 7 halaman: status 200, chart canvas render, harga on-chain, trade panel muncul, wallet button ada.
+- [x] Rilis i18n: gh-pages `d2fc7e3`, chart centering + legend delta + tombol bahasa.
 
 ### Catatan insiden deploy
 Build yang dijalankan dari WSL/git-bash tidak meneruskan `GITHUB_PAGES` ke npm

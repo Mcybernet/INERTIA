@@ -5,6 +5,7 @@ import { shortAddr } from "@/lib/format";
 import { explorerAddress } from "@/lib/nav";
 import type { PoolSnapshot } from "@/lib/types";
 import { CopyButton } from "./CopyButton";
+import { useI18n } from "./LanguageProvider";
 import { Panel, PanelHeader } from "./ui";
 
 const BADGES = [
@@ -14,10 +15,11 @@ const BADGES = [
 ];
 
 function AddressRow({ label, address }: { label: string; address: string }) {
+  const { t } = useI18n();
   return (
     <li className="flex items-center justify-between gap-2 px-4 py-2.5">
       <span className="text-[9px] uppercase tracking-label text-dim">
-        {label}
+        {t(label)}
       </span>
       <div className="flex items-center gap-2">
         <CopyButton value={address} />
@@ -40,10 +42,11 @@ function AddressRow({ label, address }: { label: string; address: string }) {
  * program. Semua data berasal dari snapshot pool, bukan hardcode UI.
  */
 export function OnChainPanel({ snapshot }: { snapshot: PoolSnapshot }) {
+  const { t } = useI18n();
   return (
     <Panel className="flex h-full flex-col">
       <PanelHeader
-        title="Bukti on-chain"
+        title={t("Bukti on-chain")}
         subtitle="Devnet"
         right={
           <span className="border border-line px-1.5 py-0.5 text-[8px] uppercase tracking-label text-dim">
@@ -64,7 +67,7 @@ export function OnChainPanel({ snapshot }: { snapshot: PoolSnapshot }) {
         {BADGES.map((badge) => (
           <li key={badge} className="flex items-center gap-2 text-[10px] text-muted">
             <span className="h-1 w-1 shrink-0 bg-gold" aria-hidden />
-            {badge}
+            {t(badge)}
           </li>
         ))}
       </ul>
@@ -76,7 +79,7 @@ export function OnChainPanel({ snapshot }: { snapshot: PoolSnapshot }) {
           rel="noreferrer"
           className="hover:text-gold"
         >
-          Verifikasi sendiri di explorer →
+          {t("Verifikasi sendiri di explorer →")}
         </a>
       </footer>
     </Panel>

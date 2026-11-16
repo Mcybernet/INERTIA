@@ -8,6 +8,7 @@ import {
   RENT_EXEMPT_MIN,
 } from "@/lib/constants";
 import {
+  EMPTY,
   fmtPct,
   fmtPrice,
   fmtSolLamports,
@@ -17,17 +18,18 @@ import {
 import { priceImpactBps, quoteBuy } from "@/lib/math";
 import { explorerAddress } from "@/lib/nav";
 import type { HistoryEvent, PoolSnapshot } from "@/lib/types";
+import { useI18n } from "./LanguageProvider";
 import { Panel, PanelHeader, Skeleton } from "./ui";
 
 const THRESHOLD = MIN_MASS_SOL + RENT_EXEMPT_MIN;
 
-/** Ukuran contoh untuk preview quote — kecil supaya price impact tetap wajar. */
+/** Ukuran contoh untuk preview quote, kecil supaya price impact tetap wajar. */
 const PREVIEW_SOL = 100_000_000n; // 0,1 SOL
 
 const CHECKLIST = [
   "Wallet di jaringan Devnet, bukan Mainnet",
   "Sisakan SOL untuk fee jaringan + sewa ATA",
-  "Harga constant-product — tidak ada bonding curve",
+  "Harga constant-product, tanpa bonding curve",
 ];
 
 /**
@@ -42,10 +44,12 @@ export function MarketPanel({
   snapshot: PoolSnapshot | null;
   events: HistoryEvent[];
 }) {
+  const { t } = useI18n();
+
   if (!snapshot) {
     return (
       <Panel>
-        <PanelHeader title="Pasar" subtitle="Devnet" />
+        <PanelHeader title={t("Pasar")} subtitle="Devnet" />
         <div className="space-y-3 p-4">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-10 w-full" />
@@ -87,7 +91,7 @@ export function MarketPanel({
   return (
     <Panel>
       <PanelHeader
-        title="Pasar"
+        title={t("Pasar")}
         subtitle="Devnet"
         right={
           <span className="border border-line px-1.5 py-0.5 text-[8px] uppercase tracking-label text-dim">
@@ -97,7 +101,7 @@ export function MarketPanel({
       />
 
       <div className="border-b border-lineSoft px-4 py-3">
-        <div className="label">Harga INRT</div>
+        <div className="label">{t("Harga INRT")}</div>
         <div className="mt-1.5 flex flex-wrap items-baseline gap-2">
           <span className="mono text-[22px] leading-none text-gold">
             {fmtPrice(snapshot.priceScaled)} SOL
@@ -112,12 +116,14 @@ export function MarketPanel({
               {fmtPct(Math.round(Math.abs(change) * 100))}
             </span>
           ) : (
-            <span className="text-[10px] text-dim">belum ada event</span>
+            <span className="text-[10px] text-dim">
+              {t("belum ada event")}
+            </span>
           )}
         </div>
         <div className="mt-1 text-[9px] text-dim">
-          {change !== null ? "perubahan sejak event pertama · " : ""}
-          rasio reserve, bukan oracle
+          {change !== null ? t("perubahan sejak event pertama · ") : ""}
+          {t("rasio reserve, bukan oracle")}
         </div>
       </div>
 
@@ -126,33 +132,35 @@ export function MarketPanel({
           href="/trade#buy"
           className="flex h-10 items-center justify-center bg-ink-1 text-[10px] uppercase tracking-label text-up transition-colors hover:bg-gold/10 hover:text-gold"
         >
-          Beli INRT
+          {t("Beli INRT")}
         </Link>
         <Link
           href="/trade#sell"
           className="flex h-10 items-center justify-center bg-ink-1 text-[10px] uppercase tracking-label text-down transition-colors hover:bg-down/10"
         >
-          Jual INRT
+          {t("Jual INRT")}
         </Link>
       </div>
 
       <div className="border-b border-lineSoft px-4 py-3">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="label">Preview 0,1 SOL</span>
+          <span className="label">{t("Preview 0,1 SOL")}</span>
           <span className="mono text-[11px] text-fg">
-            {quote ? `${fmtTokenInt(quote.out)} INRT` : "—"}
+            {quote ? `${fmtTokenInt(quote.out)} INRT` : EMPTY}
           </span>
         </div>
         <div className="mt-1 text-[9px] text-dim">
-          fee 0,30% sudah dipotong · impact ±{fmtPct(impact, 2)}
+          {t("fee 0,30% sudah dipotong · impact ±{pct}", {
+            pct: fmtPct(impact, 2),
+          })}
         </div>
       </div>
 
       <div className="border-b border-lineSoft px-4 py-3">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="label">Mass Reserve</span>
+          <span className="label">{t("Mass Reserve")}</span>
           <span className="mono text-[9px] text-dim">
-            {fmtPct(usedBps)} terpakai
+            {t("{pct} terpakai", { pct: fmtPct(usedBps) })}
           </span>
         </div>
         <div
@@ -161,7 +169,7 @@ export function MarketPanel({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(usedRatio * 100)}
-          aria-label="Mass Reserve yang sudah masuk pool"
+          aria-label={t("Mass Reserve yang sudah masuk pool")}
         >
           <div
             className="h-full bg-gold"
@@ -169,11 +177,13 @@ export function MarketPanel({
           />
         </div>
         <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-2 text-[9px] text-dim">
-          <span>{fmtTokenInt(reserve)} INRT sisa</span>
+          <span>{t("{n} INRT sisa", { n: fmtTokenInt(reserve) })}</span>
           <span className={ready ? "text-gold" : ""}>
             {ready
-              ? "fee vault siap add_mass"
-              : `fee vault ${fmtSolLamports(fee)} SOL`}
+              ? t("fee vault siap add_mass")
+              : t("fee vault {amount} SOL", {
+                  amount: fmtSolLamports(fee),
+                })}
           </span>
         </div>
       </div>
@@ -192,27 +202,27 @@ export function MarketPanel({
           </a>
         </li>
         <li className="flex items-center justify-between gap-3 px-4 py-2.5">
-          <span className="text-dim">Fee swap</span>
-          <span className="mono text-fg">0,30% → massa</span>
+          <span className="text-dim">{t("Fee swap")}</span>
+          <span className="mono text-fg">{t("0,30% → massa")}</span>
         </li>
       </ul>
 
       <div className="border-t border-line px-4 py-3">
-        <div className="label">Sebelum beli</div>
+        <div className="label">{t("Sebelum beli")}</div>
         <ol className="mt-2 space-y-1.5">
           {CHECKLIST.map((item, index) => (
             <li key={item} className="flex gap-2.5 text-[10px] text-muted">
               <span className="mono text-[9px] text-gold">
                 0{index + 1}
               </span>
-              <span>{item}</span>
+              <span>{t(item)}</span>
             </li>
           ))}
         </ol>
       </div>
 
       <footer className="border-t border-lineSoft px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-        ditandatangani wallet kamu · tanpa custodian
+        {t("ditandatangani wallet kamu · tanpa custodian")}
       </footer>
     </Panel>
   );

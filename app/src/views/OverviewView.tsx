@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ActivityTable } from "@/components/ActivityTable";
 import { useData } from "@/components/DataProvider";
 import { Faq } from "@/components/Faq";
+import { useI18n } from "@/components/LanguageProvider";
 import { MarketPanel } from "@/components/MarketPanel";
 import { MassReserveBand } from "@/components/MassReserveBand";
 import { OnChainPanel } from "@/components/OnChainPanel";
@@ -36,7 +37,7 @@ const PRINCIPLES = [
   {
     kicker: "03 · Fee",
     title: "Fee kembali ke massa",
-    text: "Setiap swap menyisihkan 0,30% ke fee vault terpisah. Fee itu dibelanjakan lewat add_mass — bukan diambil owner.",
+    text: "Setiap swap menyisihkan 0,30% ke fee vault terpisah. Fee itu dibelanjakan lewat add_mass, bukan diambil owner.",
     href: "/mass",
     cta: "Cara kerja fee",
   },
@@ -44,20 +45,23 @@ const PRINCIPLES = [
 
 export function OverviewView() {
   const { pool, history, events, progress } = useData();
+  const { t } = useI18n();
 
   return (
     <>
       <PageIntro
         kicker="Overview · Devnet"
-        title="The Mass — likuiditas yang tidak bisa ditarik"
-        description="Harga dibentuk constant-product di pool internal. Tidak ada bonding curve, tidak ada instruksi withdraw: satu-satunya jalan token keluar dari Mass Reserve adalah add_mass."
+        title={t("The Mass · likuiditas yang tidak bisa ditarik")}
+        description={t(
+          "Harga dibentuk constant-product di pool internal. Tidak ada bonding curve, tidak ada instruksi withdraw: satu-satunya jalan token keluar dari Mass Reserve adalah add_mass.",
+        )}
         right={
           <div className="flex flex-wrap gap-2">
             <Link href="/trade#buy" className="btn btn-gold">
-              Beli INRT
+              {t("Beli INRT")}
             </Link>
             <Link href="/docs" className="btn btn-ghost">
-              Cara kerja
+              {t("Cara kerja")}
             </Link>
           </div>
         }
@@ -66,13 +70,13 @@ export function OverviewView() {
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 border border-line bg-ink-1 px-4 py-2 text-[10px]">
         <span className="uppercase tracking-label text-gold">Devnet</span>
         <span className="text-muted">
-          Token ini tidak punya nilai. Jangan kirim SOL mainnet.
+          {t("Token ini tidak punya nilai. Jangan kirim SOL mainnet.")}
         </span>
         <Link
           href="/docs"
           className="ml-auto uppercase tracking-label text-dim hover:text-gold"
         >
-          Cara mulai →
+          {t("Cara mulai →")}
         </Link>
       </div>
 
@@ -81,8 +85,9 @@ export function OverviewView() {
           <span className="uppercase tracking-label">RPC error · </span>
           {pool.error}
           <span className="mt-1 block text-[10px] text-dim">
-            Devnet RPC publik bisa membatasi laju. Coba refresh beberapa saat
-            lagi.
+            {t(
+              "Devnet RPC publik bisa membatasi laju. Coba refresh beberapa saat lagi.",
+            )}
           </span>
         </div>
       ) : null}
@@ -90,10 +95,11 @@ export function OverviewView() {
       {history.error ? (
         <div className="mb-3 border border-line bg-ink-1 px-4 py-2 text-[10px] text-dim">
           <span className="uppercase tracking-label text-gold">
-            Riwayat tertunda ·{" "}
+            {t("Riwayat tertunda · ")}
           </span>
-          RPC publik sedang membatasi permintaan. Chart dan aktivitas memakai
-          data terakhir yang tersimpan; refresh otomatis akan mencoba lagi.
+          {t(
+            "RPC publik sedang membatasi permintaan. Chart dan aktivitas memakai data terakhir yang tersimpan; refresh otomatis akan mencoba lagi.",
+          )}
         </div>
       ) : null}
 
@@ -139,8 +145,11 @@ export function OverviewView() {
             rows={8}
             subtitle={
               progress
-                ? `memuat ${progress.done}/${progress.total} tx · 8 terbaru`
-                : "8 event terbaru"
+                ? t("memuat {done}/{total} tx · 8 terbaru", {
+                    done: progress.done,
+                    total: progress.total,
+                  })
+                : t("8 event terbaru")
             }
           />
           <div className="mt-2 flex justify-end">
@@ -148,7 +157,7 @@ export function OverviewView() {
               href="/activity"
               className="text-[10px] uppercase tracking-label text-dim hover:text-gold"
             >
-              Semua aktivitas →
+              {t("Semua aktivitas →")}
             </Link>
           </div>
         </div>
@@ -157,16 +166,17 @@ export function OverviewView() {
 
       <section className="panel mt-3">
         <div className="border-b border-line px-4 py-5">
-          <div className="label">Prinsip</div>
+          <div className="label">{t("Prinsip")}</div>
           <p className="mt-2 max-w-[56ch] text-[18px] leading-snug text-fg">
-            Tidak ada tombol withdraw. Itu bukan fitur yang belum dibuat — itu
-            desain.
+            {t(
+              "Tidak ada tombol withdraw. Itu bukan fitur yang belum dibuat. Itu desain.",
+            )}
           </p>
           <Link
             href="/mass"
             className="mt-3 inline-block text-[10px] uppercase tracking-label text-gold hover:underline"
           >
-            Lihat mekanismenya →
+            {t("Lihat mekanismenya →")}
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-px bg-line md:grid-cols-3">
@@ -176,15 +186,15 @@ export function OverviewView() {
               href={item.href}
               className="group bg-ink-1 px-4 py-4 transition-colors duration-150 hover:bg-ink-2"
             >
-              <div className="label">{item.kicker}</div>
+              <div className="label">{t(item.kicker)}</div>
               <h2 className="mt-2 text-[12px] uppercase tracking-label text-fg group-hover:text-gold">
-                {item.title}
+                {t(item.title)}
               </h2>
               <p className="mt-2 text-[10px] leading-relaxed text-muted">
-                {item.text}
+                {t(item.text)}
               </p>
               <span className="mt-3 inline-block text-[9px] uppercase tracking-label text-dim group-hover:text-gold">
-                {item.cta} →
+                {t(item.cta)} →
               </span>
             </Link>
           ))}

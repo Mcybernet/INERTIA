@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { MINT, PROGRAM_ID } from "@/lib/constants";
 import { FAUCET, NAV, REPO, explorerAddress } from "@/lib/nav";
+import { useI18n } from "./LanguageProvider";
 
 export function SiteFooter() {
+  const { t } = useI18n();
   const program = PROGRAM_ID.toBase58();
   const mint = MINT.toBase58();
 
@@ -12,16 +16,17 @@ export function SiteFooter() {
         <div>
           <div className="text-[11px] tracking-[0.26em] text-fg">INERTIA</div>
           <p className="mt-2 max-w-[28ch] text-[10px] leading-relaxed text-dim">
-            Token Devnet tanpa bonding curve. Likuiditas terkunci di pool
-            constant-product, fee 0,30% seluruhnya kembali ke massa.
+            {t(
+              "Token Devnet tanpa bonding curve. Likuiditas terkunci di pool constant-product, fee 0,30% seluruhnya kembali ke massa.",
+            )}
           </p>
           <p className="mt-3 border border-line px-2 py-1 text-[9px] uppercase tracking-label text-muted">
-            Devnet only · bukan mainnet
+            {t("Devnet only · bukan mainnet")}
           </p>
         </div>
 
         <div>
-          <div className="label">Halaman</div>
+          <div className="label">{t("Halaman")}</div>
           <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
             {NAV.map((item) => (
               <li key={item.href}>
@@ -37,7 +42,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <div className="label">Kontrak</div>
+          <div className="label">{t("Kontrak")}</div>
           <ul className="mt-2 space-y-1.5">
             <li>
               <a
@@ -64,7 +69,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <div className="label">Sumber</div>
+          <div className="label">{t("Sumber")}</div>
           <ul className="mt-2 space-y-1.5">
             <li>
               <a
@@ -83,7 +88,7 @@ export function SiteFooter() {
                 rel="noreferrer"
                 className="text-[10px] tracking-label text-muted hover:text-gold"
               >
-                Faucet Devnet ↗
+                {t("Faucet Devnet ↗")}
               </a>
             </li>
             <li>
@@ -91,7 +96,7 @@ export function SiteFooter() {
                 href="/docs"
                 className="text-[10px] tracking-label text-muted hover:text-gold"
               >
-                Cara beli & risiko
+                {t("Cara beli & risiko")}
               </Link>
             </li>
           </ul>
@@ -102,7 +107,7 @@ export function SiteFooter() {
         <div className="mx-auto flex max-w-[1480px] flex-col gap-1 px-4 py-3 text-[9px] uppercase tracking-label text-dim sm:flex-row sm:items-center sm:justify-between lg:px-6">
           <span>INERTIA · INRT · Solana Devnet</span>
           <span className="mono normal-case tracking-normal">
-            data dibaca langsung dari RPC · tanpa server
+            {t("data dibaca langsung dari RPC · tanpa server")}
           </span>
         </div>
       </div>
