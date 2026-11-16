@@ -159,8 +159,10 @@ npx serve out    # buka http://localhost:3000/INERTIA/
 - Dua bahasa (ID/EN) lewat tombol di header; pilihan disimpan di
   `localStorage` (`inrt:lang`). Kamus ada di `app/src/lib/i18n.ts`
   (kunci teks Indonesia, fallback ke teks asli bila belum diterjemahkan).
-- Chart memakai WIB, default 4J, candle terakhir di tengah. Legend OHLC
-  mengikuti crosshair dan menampilkan persen perubahan candle (close vs open).
+- Chart memakai WIB, default 4J, candle terakhir di tengah. Header menampilkan
+  perubahan 24 jam (`24 jam`/`24h`; fallback `sejak launch` selama riwayat belum
+  24 jam), sedangkan legend OHLC mengikuti crosshair dan menampilkan persen
+  perubahan candle tersebut (close vs previous close).
 - `getTokenLargestAccounts` dilewati di RPC publik (selalu 429); tabel holder
   memakai fallback vault pool, Mass Reserve, owner, dan wallet dari event.
 - Deploy ke GitHub Pages lewat `scripts/deploy-pages.sh` (build statis lalu push
