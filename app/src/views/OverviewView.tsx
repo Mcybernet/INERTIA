@@ -4,7 +4,11 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ActivityTable } from "@/components/ActivityTable";
 import { useData } from "@/components/DataProvider";
+import { Faq } from "@/components/Faq";
 import { MarketPanel } from "@/components/MarketPanel";
+import { MassReserveBand } from "@/components/MassReserveBand";
+import { OnChainPanel } from "@/components/OnChainPanel";
+import { PageMap } from "@/components/PageMap";
 import { StatStrip } from "@/components/StatStrip";
 import { PageIntro } from "@/components/PageIntro";
 import { Panel } from "@/components/ui";
@@ -59,6 +63,19 @@ export function OverviewView() {
         }
       />
 
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 border border-line bg-ink-1 px-4 py-2 text-[10px]">
+        <span className="uppercase tracking-label text-gold">Devnet</span>
+        <span className="text-muted">
+          Token ini tidak punya nilai. Jangan kirim SOL mainnet.
+        </span>
+        <Link
+          href="/docs"
+          className="ml-auto uppercase tracking-label text-dim hover:text-gold"
+        >
+          Cara mulai →
+        </Link>
+      </div>
+
       {pool.error ? (
         <div className="mb-3 border border-down/40 bg-ink-1 px-4 py-3 text-[11px] text-down">
           <span className="uppercase tracking-label">RPC error · </span>
@@ -89,6 +106,33 @@ export function OverviewView() {
             loading={history.loading}
             progress={progress}
           />
+        </div>
+        <div className="flex flex-col gap-3">
+          {pool.data ? (
+            <MarketPanel snapshot={pool.data} events={events} />
+          ) : (
+            <Panel className="h-[420px] animate-pulseSoft" />
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {pool.data ? (
+            <MassReserveBand snapshot={pool.data} events={events} />
+          ) : (
+            <Panel className="h-[260px] animate-pulseSoft" />
+          )}
+        </div>
+        {pool.data ? (
+          <OnChainPanel snapshot={pool.data} />
+        ) : (
+          <Panel className="animate-pulseSoft" />
+        )}
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
           <ActivityTable
             events={events}
             loading={history.loading}
@@ -99,48 +143,55 @@ export function OverviewView() {
                 : "8 event terbaru"
             }
           />
-          <div className="flex flex-wrap gap-2">
-            <Link href="/activity" className="chip py-2">
+          <div className="mt-2 flex justify-end">
+            <Link
+              href="/activity"
+              className="text-[10px] uppercase tracking-label text-dim hover:text-gold"
+            >
               Semua aktivitas →
-            </Link>
-            <Link href="/holders" className="chip py-2">
-              Holder & tier →
-            </Link>
-            <Link href="/mass" className="chip py-2">
-              Mass Reserve →
             </Link>
           </div>
         </div>
-
-        <div className="flex flex-col gap-3">
-          {pool.data ? (
-            <MarketPanel snapshot={pool.data} events={events} />
-          ) : (
-            <Panel className="h-[420px] animate-pulseSoft" />
-          )}
-        </div>
+        <Faq />
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-px border border-line bg-line md:grid-cols-3">
-        {PRINCIPLES.map((item) => (
+      <section className="panel mt-3">
+        <div className="border-b border-line px-4 py-5">
+          <div className="label">Prinsip</div>
+          <p className="mt-2 max-w-[56ch] text-[18px] leading-snug text-fg">
+            Tidak ada tombol withdraw. Itu bukan fitur yang belum dibuat — itu
+            desain.
+          </p>
           <Link
-            key={item.title}
-            href={item.href}
-            className="group bg-ink-1 px-4 py-4 transition-colors duration-150 hover:bg-ink-2"
+            href="/mass"
+            className="mt-3 inline-block text-[10px] uppercase tracking-label text-gold hover:underline"
           >
-            <div className="label">{item.kicker}</div>
-            <h2 className="mt-2 text-[12px] uppercase tracking-label text-fg group-hover:text-gold">
-              {item.title}
-            </h2>
-            <p className="mt-2 text-[10px] leading-relaxed text-muted">
-              {item.text}
-            </p>
-            <span className="mt-3 inline-block text-[9px] uppercase tracking-label text-dim group-hover:text-gold">
-              {item.cta} →
-            </span>
+            Lihat mekanismenya →
           </Link>
-        ))}
-      </div>
+        </div>
+        <div className="grid grid-cols-1 gap-px bg-line md:grid-cols-3">
+          {PRINCIPLES.map((item) => (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="group bg-ink-1 px-4 py-4 transition-colors duration-150 hover:bg-ink-2"
+            >
+              <div className="label">{item.kicker}</div>
+              <h2 className="mt-2 text-[12px] uppercase tracking-label text-fg group-hover:text-gold">
+                {item.title}
+              </h2>
+              <p className="mt-2 text-[10px] leading-relaxed text-muted">
+                {item.text}
+              </p>
+              <span className="mt-3 inline-block text-[9px] uppercase tracking-label text-dim group-hover:text-gold">
+                {item.cta} →
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <PageMap />
     </>
   );
 }
