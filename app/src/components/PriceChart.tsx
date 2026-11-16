@@ -51,7 +51,9 @@ function timeframeReady(timeframe: Timeframe, spanSeconds: number): boolean {
 
 function timeframeHint(timeframe: Timeframe, spanSeconds: number): string {
   const need = Math.round(timeframe.minSpan / 86_400);
-  const have = (Math.max(0, spanSeconds) / 86_400).toFixed(1);
+  const have = (Math.max(0, spanSeconds) / 86_400).toLocaleString("id-ID", {
+    maximumFractionDigits: 1,
+  });
   return `${timeframe.label} — butuh riwayat ${need} hari (sekarang ${have} hari)`;
 }
 
