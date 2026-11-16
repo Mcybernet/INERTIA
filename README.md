@@ -53,15 +53,15 @@ Keypair mint v2: `~/.config/solana/keys/inrt-mint-v2.json` (di luar git)
 - Private key tidak pernah diminta, ditampilkan, atau di-commit. Cek dengan
   `scripts/devnet.sh wallets`.
 
-## Devnet (live, 14 Nov 2026)
+## Devnet — pool v1 (legacy, 14 Nov 2026)
 
 | Item | Address / nilai |
 |---|---|
 | Program `inertia_mass` | `8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o` |
 | Upgrade authority | `86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C` |
-| Mint `INRT` v1 (dipakai app saat ini) | `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H` |
-| Mint `INRT` v2 (metadata on-chain, pool menyusul) | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` |
-| Pool v1 | `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM` |
+| Mint `INRT` v1 (legacy) | `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H` |
+| Mint `INRT` v2 (aktif di app) | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` |
+| Pool v1 (legacy) | `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM` |
 | Token vault | `HcmXidwTkTGRFTvJAx4bCj7Ebs5gJZmJVNakvBnpPJff` |
 | SOL vault | `9ymSmLaEgas8329MWfLomRPEvpurxPsGCJLPYxqkcUcy` |
 | Fee vault | `4cU949bkmQquiVGpAgfFFTRmqoqpvT3ErYLSWtbbcREH` |
@@ -72,11 +72,10 @@ Keypair mint v2: `~/.config/solana/keys/inrt-mint-v2.json` (di luar git)
 | Mass Reserve | 10.000.000 INRT |
 | Owner | 39.040.000 INRT |
 
-Seed memakai opsi C, jadi pool aktif hanya 960.000 dari alokasi pool 9,6 jt.
-Sisa **8,64 jt INRT** tidak masuk likuiditas (tidak ada top-up) dan ikut dikirim
-ke owner: 30,4 jt alokasi + 8,64 jt sisa pool = 39,04 jt. Tidak ada burn.
-`add_mass` di Devnet belum dijalankan karena `fee_vault` masih di bawah 1 SOL
-(saat ini ±0,001 SOL); jalur ini sudah terbukti di rehearsal lokal
+Peluncuran v1 memakai opsi C, jadi pool aktif hanya 960.000 dari alokasi pool
+9,6 jt. Sisa **8,64 jt INRT** tidak masuk likuiditas (tidak ada top-up) dan ikut
+dikirim ke owner: 30,4 jt alokasi + 8,64 jt sisa pool = 39,04 jt. Tidak ada burn.
+Jalur `add_mass` sudah terbukti di rehearsal lokal
 (`scripts/rehearsal_local.sh`).
 
 ## Mint v2 + metadata on-chain (15 Nov 2026)
@@ -96,9 +95,28 @@ permanen. Mint v2 dibuat dengan supply yang sama plus metadata on-chain:
 | Mint authority | `null` (dicabut) |
 | Freeze authority | `null` |
 
-Payer memegang 50 jt INRT v2. Pool v2 belum di-seed: butuh top-up ±3,9 SOL
-Devnet, target 4,8 SOL + 960.000 INRT. Selama pool v2 belum ada, `app/` tetap
-menunjuk mint/pool v1.
+### Pool v2 live (17 Nov 2026)
+
+| Item | Address / nilai |
+|---|---|
+| Pool | `6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV` |
+| Token vault | `EkEChvJiCKhE46mSCAaLwkMFFef5dhwk6J8QrkK2JdgG` |
+| SOL vault | `A6c6u8gjGjv3jMPvTuBpg7hAnhZL1ao1mCf7nQJ9FrCP` |
+| Fee vault | `BrWU8kApyf4xhqRz5zoCce9rczsVESDdruSvt2XK3exN` |
+| Mass Reserve vault | `5N5CsAhPqgcpHQqorcv19P5bCquFigA9N7HmrhyjZQCA` |
+| ATA owner | `Eno3Lpj4C7fwXHa6X1LQSkLPLVZrigs4xPcr2J9oLj1L` |
+| Harga awal | `0,000005 SOL/INRT` |
+| Likuiditas | 4,8 SOL + 960.000 INRT |
+| Mass Reserve | 9.600.000 INRT |
+| Owner | 39.040.000 INRT |
+| Sisa operasional (payer) | 400.000 INRT |
+
+Pool di-seed `4,8 SOL + 960.000 INRT` (harga awal `0,000005 SOL/INRT`);
+Mass Reserve diisi 9,6 jt INRT; 39,04 jt INRT dikirim ke ATA owner; 400 rb
+INRT tetap di payer untuk operasional. `app/` sekarang menunjuk mint/pool v2
+secara default, tanpa env tambahan.
+`add_mass` belum dijalankan karena `fee_vault` masih di bawah 1 SOL
+(saat ini ±0,0009 SOL); jalur ini sudah terbukti di rehearsal lokal.
 
 ## Frontend (`app/`)
 

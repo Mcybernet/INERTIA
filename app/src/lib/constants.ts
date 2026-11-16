@@ -6,14 +6,14 @@ export const PROGRAM_ID = new PublicKey(
 );
 
 /**
- * Alamat default = peluncuran v1. Saat pool v2 live, cukup set
+ * Alamat default = peluncuran v2 (cutover 17 Nov 2026). Env
  * `NEXT_PUBLIC_MINT`, `NEXT_PUBLIC_POOL`, dan `NEXT_PUBLIC_OWNER_ATA`
- * lalu rebuild — tidak perlu mengubah kode.
+ * tetap bisa menimpa tanpa mengubah kode.
  */
-const DEFAULT_MINT = "GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H";
-const DEFAULT_POOL = "";
+const DEFAULT_MINT = "D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6";
+const DEFAULT_POOL = "6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV";
 const DEFAULT_OWNER = "86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C";
-const DEFAULT_OWNER_ATA = "7b4cYnPTtxYsFe9Z4mUHPMZDBy6h3VvwPwaAME9Jq5ts";
+const DEFAULT_OWNER_ATA = "Eno3Lpj4C7fwXHa6X1LQSkLPLVZrigs4xPcr2J9oLj1L";
 
 function env(name: string, fallback: string): string {
   const value = process.env[name];
@@ -29,7 +29,7 @@ export const POOL_OVERRIDE: PublicKey | null = env("NEXT_PUBLIC_POOL", DEFAULT_P
   : null;
 
 /** Label generasi peluncuran yang sedang dipakai UI. */
-export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v1");
+export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v2");
 
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
@@ -71,6 +71,11 @@ export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
 export const OWNER_ADDRESS = env("NEXT_PUBLIC_OWNER", DEFAULT_OWNER);
 export const OWNER_ATA = env("NEXT_PUBLIC_OWNER_ATA", DEFAULT_OWNER_ATA);
 export const KNOWN_ACCOUNTS: Record<string, string> = {
+  // v2 (aktif)
+  "EkEChvJiCKhE46mSCAaLwkMFFef5dhwk6J8QrkK2JdgG": "POOL VAULT",
+  "5N5CsAhPqgcpHQqorcv19P5bCquFigA9N7HmrhyjZQCA": "MASS RESERVE",
+  "Eno3Lpj4C7fwXHa6X1LQSkLPLVZrigs4xPcr2J9oLj1L": "OWNER",
+  // v1 (legacy, tetap dikenali di riwayat lama)
   "HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM": "POOL VAULT",
   "HcmXidwTkTGRFTvJAx4bCj7Ebs5gJZmJVNakvBnpPJff": "POOL VAULT",
   "nCbjXjTZbqj9GyJogUeaweh3K5MKWfYCKRGjatPMroH": "MASS RESERVE",

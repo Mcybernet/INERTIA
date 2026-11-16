@@ -1,16 +1,17 @@
 # TODO — Next Steps INERTIA
 
-Diperbarui: 15 November 2026
-Fokus hari ini: **frontend** (`app/`). On-chain ditunda sampai Devnet SOL tersedia.
+Diperbarui: 17 November 2026
+Status: **pool v2 live di Devnet**; web live memakai mint/pool v2. Sisa pekerjaan:
+keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan operasional repo.
 
 ## Status ringkas
 
 | Item | Kondisi |
 | --- | --- |
-| Web live | https://mcybernet.github.io/INERTIA/ (masih mint/pool **v1**) |
+| Web live | https://mcybernet.github.io/INERTIA/ (mint/pool **v2**) |
 | Mint v2 | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` — 50 jt INRT, authority `null` |
-| Pool v2 | **belum ada** (butuh seed 4,8 SOL) |
-| Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,955 SOL (kurang ±3,95) |
+| Pool v2 | `6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV` — live, seed 4,8 SOL + 960 rb INRT |
+| Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,148 SOL |
 | Repo | publik, homepage/topics/LICENSE kosong |
 
 ---
@@ -84,15 +85,15 @@ berprefix.
 
 ---
 
-## 2. On-chain — setelah Devnet SOL masuk
+## 2. On-chain — pool v2 live (17 Nov 2026)
 
-- [ ] Top-up `Gb6z…xKgt` ±4 SOL Devnet (faucet web login GitHub; `requestAirdrop` 410).
-- [ ] `scripts/devnet.sh init D6AQ…C7Q6`
-- [ ] `scripts/devnet.sh seed D6AQ…C7Q6 4.8 960000`
-- [ ] `scripts/devnet.sh reserve D6AQ…C7Q6 9600000` (Mass Reserve 10 jt)
-- [ ] Distribusi owner 39,04 jt ke ATA tujuan.
-- [ ] Jalankan FE-2 dengan env v2, rebuild, deploy, verifikasi.
-- [ ] Update `README.md` + `app/README.md` dengan alamat v2.
+- [x] Top-up `Gb6z…xKgt` +4 SOL Devnet (saldo jadi 4,955 SOL).
+- [x] `scripts/devnet.sh init D6AQ…C7Q6` → pool `6Da5…k3oV`.
+- [x] `scripts/devnet.sh seed D6AQ…C7Q6 4.8 960000` → 4,8 SOL + 960 rb INRT.
+- [x] `scripts/devnet.sh reserve D6AQ…C7Q6 9600000` → Mass Reserve 9,6 jt INRT.
+- [x] Distribusi owner 39,04 jt ke ATA `Eno3…Lj1L`; sisa 400 rb di payer.
+- [x] Cutover default `app/` ke v2, rebuild, deploy `gh-pages` `1595cbf`, verifikasi live.
+- [x] Update `README.md` + `app/README.md` dengan alamat v2.
 
 ## 3. Operasional & repo
 

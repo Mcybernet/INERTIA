@@ -40,8 +40,9 @@ di-set saat build (hanya untuk debug lokal).
 
 ### Konfigurasi alamat
 
-Default = peluncuran **v1**. Untuk cutover ke pool v2 cukup isi env ini saat
-build (tanpa menyentuh kode):
+Default = peluncuran **v2** (cutover 17 Nov 2026). Semua alamat v2 sudah
+tertanam di kode, jadi build tanpa env tetap benar. Env berikut bisa menimpa
+alamat tersebut saat build:
 
 | Env | Fungsi |
 |---|---|
@@ -55,7 +56,7 @@ RPC publik `api.devnet.solana.com` membatasi `getTokenLargestAccounts` dan
 `getTransaction`. Riwayat diambil satu transaksi per satu dengan jeda ±1,2 detik
 (refresh inkremental), lalu **dirender bertahap**: setiap tx yang selesai
 langsung menambah baris tabel dan candle chart, sementara footer menampilkan
-progres `n/total`. Hasil akhir di-cache di `localStorage` (`inrt:history:v3`)
+progres `n/total`. Hasil akhir di-cache di `localStorage` (`inrt:history:v4`)
 supaya kunjungan berikutnya instan. Tabel holder otomatis memakai fallback
 (vault + reserve + owner + wallet dari event); isi `NEXT_PUBLIC_RPC_URL` dengan
 RPC Devnet pribadi dan `NEXT_PUBLIC_ENABLE_LARGEST_ACCOUNTS=1` kalau ingin
