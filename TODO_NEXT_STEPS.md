@@ -80,13 +80,18 @@ operasional repo.
 - [x] Semua halaman & komponen diterjemahkan; em dash `—` dihapus dari UI.
 - [x] Playwright: 7 halaman EN tanpa sisa kata Indonesia, switch dua arah, 360–1280 tanpa overflow.
 
-### FE-10 · Metrik persen chart (belum diputuskan)
+### FE-10 · Metrik persen chart (P0, sebagian siap)
+
+**Bug yang bisa langsung diperbaiki (tanpa keputusan semantik):**
+- [ ] Nilai turun tidak menampilkan tanda minus (`fmtPct` absolut, `+` hanya untuk naik); perbaiki di header dan legend.
+- [ ] Nilai nol tampil `+0%`; samakan jadi `0,00%` tanpa tanda.
+- [ ] Label header jangan mengklaim timeframe selama semantik belum dipilih; pakai "sejak launch" / "since launch" sebagai label sementara.
+
+**Butuh keputusan semantik:**
 - [ ] Persen di header sekarang = `last.close` vs `first.open` (candle paling awal = launch), bukan per timeframe. Karena semua timeframe mulai dari launch, angkanya sama: terukur `+0,18%` di 1M/5M/15M/1J/4J.
 - [ ] Label `dalam {label}` / `over {label}` menyesatkan; angka baru berbeda saat batas 1.500 bar mulai memotong data (1M ±25 jam, 5M ±5 hari, 15M ±15,6 hari, 1J ±62 hari, 4J ±250 hari).
 - [ ] Opsi semantik: (A) perubahan candle berjalan per timeframe, (B) 24 jam tetap dengan label `24 jam`, (C) perubahan N bar, (D) tetap sejak launch + ganti label.
 - [ ] Rekomendasi: A untuk header, Δ legend tetap untuk candle hover; B opsional sebagai metrik kedua.
-- [ ] Nilai turun tidak menampilkan tanda minus (`fmtPct` absolut, `+` hanya untuk naik); perbaiki di header dan legend.
-- [ ] Nilai nol tampil `+0%`; samakan jadi `0,00%` tanpa tanda.
 - [ ] Setelah semantik dipilih: sesuaikan label ID/EN + kamus, lalu uji ulang Playwright.
 
 ### FE-8 · Verifikasi rilis frontend
