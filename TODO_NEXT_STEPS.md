@@ -80,6 +80,15 @@ operasional repo.
 - [x] Semua halaman & komponen diterjemahkan; em dash `—` dihapus dari UI.
 - [x] Playwright: 7 halaman EN tanpa sisa kata Indonesia, switch dua arah, 360–1280 tanpa overflow.
 
+### FE-10 · Metrik persen chart (belum diputuskan)
+- [ ] Persen di header sekarang = `last.close` vs `first.open` (candle paling awal = launch), bukan per timeframe. Karena semua timeframe mulai dari launch, angkanya sama: terukur `+0,18%` di 1M/5M/15M/1J/4J.
+- [ ] Label `dalam {label}` / `over {label}` menyesatkan; angka baru berbeda saat batas 1.500 bar mulai memotong data (1M ±25 jam, 5M ±5 hari, 15M ±15,6 hari, 1J ±62 hari, 4J ±250 hari).
+- [ ] Opsi semantik: (A) perubahan candle berjalan per timeframe, (B) 24 jam tetap dengan label `24 jam`, (C) perubahan N bar, (D) tetap sejak launch + ganti label.
+- [ ] Rekomendasi: A untuk header, Δ legend tetap untuk candle hover; B opsional sebagai metrik kedua.
+- [ ] Nilai turun tidak menampilkan tanda minus (`fmtPct` absolut, `+` hanya untuk naik); perbaiki di header dan legend.
+- [ ] Nilai nol tampil `+0%`; samakan jadi `0,00%` tanpa tanda.
+- [ ] Setelah semantik dipilih: sesuaikan label ID/EN + kamus, lalu uji ulang Playwright.
+
 ### FE-8 · Verifikasi rilis frontend
 - [x] `npx tsc --noEmit` bersih; build statis 11 route sukses.
 - [x] Playwright desktop 1440×900 & mobile 390×844: 0 console error, 0 request ≥400, overflow 0.
@@ -115,6 +124,10 @@ berprefix.
 - [ ] `gh repo edit`: homepage = URL live, topics (`solana`, `anchor`, `devnet`, `token`, `nextjs`).
 - [ ] `LICENSE` MIT.
 - [ ] Dokumentasikan status v1→v2 di README.
+
+## 4. Ditunda
+
+- [ ] Prototipe 3D "Mass Well" (three.js). Status: **ditunda, belum diputuskan**; belum ada dependensi `three` atau kode 3D di repo. Bila dilanjutkan: route lab terpisah (bukan nav produksi), lazy-load, geometri flat tanpa gradient/glow/partikel sesuai `IDENTITY_INERTIA.md`, fallback 2D + `prefers-reduced-motion`, ukur bundle dan FPS di mobile.
 
 ## Definition of done hari ini
 
