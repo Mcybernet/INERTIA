@@ -209,7 +209,7 @@ export default function PriceChart({
       </div>
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-        <span>
+        <span title="Bucket tanpa transaksi tetap digambar sebagai candle flat">
           Sumber: log SwapEvent dari pool · {candles.length} candle
         </span>
         {progress ? (
