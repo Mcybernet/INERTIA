@@ -40,7 +40,12 @@ const DOWN = "#C76A6A";
 /** Header chart mengikuti konvensi exchange: perubahan 24 jam. */
 const DAY_SECONDS = 86_400;
 
-type ChangeMeta = { pct: number; mode: "24h" | "launch" };
+type ChangeMeta = {
+  pct: number;
+  mode: "24h" | "launch";
+  /** Rentang yang benar-benar diukur, dipakai untuk label header. */
+  spanSeconds: number;
+};
 
 /**
  * Perubahan harga untuk header.
@@ -68,12 +73,14 @@ function changeFromEvents(events: HistoryEvent[]): ChangeMeta {
     }
   }
 
-  if (!first || !latest) return { pct: 0, mode: "launch" };
+  if (!first || !latest) return { pct: 0, mode: "launch", spanSeconds: 0 };
 
-  if (latest.ts - first.ts < DAY_SECONDS) {
+  const spanSeconds = latest.ts - first.ts;
+  if (spanSeconds < DAY_SECONDS) {
     return {
       pct: ((latest.price - first.price) / first.price) * 100,
       mode: "launch",
+      spanSeconds,
     };
   }
 
@@ -89,7 +96,11 @@ function changeFromEvents(events: HistoryEvent[]): ChangeMeta {
     baseTs = event.timestamp;
   }
 
-  return { pct: ((latest.price - base) / base) * 100, mode: "24h" };
+  return {
+    pct: ((latest.price - base) / base) * 100,
+    mode: "24h",
+    spanSeconds: DAY_SECONDS,
+  };
 }
 
 type IdleWindow = Window & {
@@ -282,6 +293,19 @@ export default function PriceChart({
   const change = changeMeta.pct;
   const changeTone =
     change > 0 ? "text-up" : change < 0 ? "text-down" : "text-dim";
+  const changeWindow = useMemo(() => {
+    if (changeMeta.mode === "24h") return t("24J");
+    const seconds = Math.max(0, changeMeta.spanSeconds);
+    if (seconds < 3_600) {
+      const minutes = Math.max(1, Math.round(seconds / 60));
+      return `${minutes}${lang === "en" ? "m" : "M"}`;
+    }
+    const hours = seconds / 3_600;
+    const value = hours.toLocaleString(getFormatLocale(), {
+      maximumFractionDigits: 1,
+    });
+    return `${value}${lang === "en" ? "h" : "J"}`;
+  }, [changeMeta, lang, t]);
   const shownChange =
     shown && shown.open > 0
       ? ((shown.close - shown.open) / shown.open) * 100
@@ -573,10 +597,12 @@ export default function PriceChart({
               title={
                 changeMeta.mode === "24h"
                   ? t("Perubahan 24 jam terhadap harga 24 jam lalu")
-                  : t("Perubahan sejak harga launch · riwayat belum 24 jam")
+                  : t("Perubahan sejak harga launch · riwayat baru {window}", {
+                      window: changeWindow,
+                    })
               }
             >
-              {changeMeta.mode === "24h" ? t("24 jam") : t("sejak launch")}
+              {last ? changeWindow : EMPTY}
             </span>
           </div>
         </div>

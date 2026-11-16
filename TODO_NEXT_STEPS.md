@@ -83,19 +83,25 @@ operasional repo.
 ### FE-10 · Metrik persen chart (P0, keputusan final TradingView)
 
 **Keputusan final (17 Nov 2026): ikuti konvensi TradingView.**
-- Header = perubahan **24 jam** terhadap harga 24 jam lalu, dengan label `24 jam` / `24h`. Selama riwayat pool belum 24 jam, fallback ke harga launch dengan label `sejak launch` / `since launch`. Angka header memang tidak berubah saat ganti timeframe (by design).
+- Header = perubahan **24 jam** terhadap harga 24 jam lalu, dengan label `24J` / `24h`. Selama riwayat pool belum 24 jam, fallback ke harga launch dan label memakai rentang yang benar-benar diukur (mis. `3,7J` / `3.7h`), bukan kata `sejak launch`. Angka header memang tidak berubah saat ganti timeframe (by design).
 - Legend OHLC = perubahan candle yang di-hover terhadap close candle sebelumnya (`close vs open`; ekuivalen karena `open` = prev close). Ini yang berubah saat ganti timeframe.
 - Format: tanda `-` untuk turun, `+` untuk naik, nol `0,00%` tanpa tanda; warna up/down, nol muted.
 - Candle flat (tanpa trade) diberi catatan `belum ada trade` / `no trades` supaya tidak terlihat rusak.
 - Metrik "sejak event pertama" tetap ada di `MarketPanel` Overview; tidak diduplikasi di chart.
 
-**Checklist implementasi:**
-- [ ] Tambah `fmtSignedPct(pct)` di `format.ts` (menerima persen, bukan bps; nol `0,00%`, tanda `+`/`-`).
-- [ ] Hitung 24 jam dari events (`latestTs`, base = event terakhir ≤ `latestTs - 86400`, fallback launch) di `PriceChart.tsx`; hapus `first.open` + `activeMeta` + label `dalam {label}`.
-- [ ] Header pakai label `24 jam`/`sejak launch`; legend pakai `fmtSignedPct`; tambah catatan `belum ada trade`.
-- [ ] Tambah kunci i18n + tooltip, cek duplikat dengan `check-i18n.cjs`.
-- [ ] `npx tsc --noEmit`, `npm run build`, `check-i18n-pages.cjs`, `probe-pct.cjs`.
-- [ ] Deploy `gh-pages`, verifikasi live, commit sumber ke `main`.
+**Checklist implementasi (selesai, live `c35348c`):**
+- [x] Tambah `fmtSignedPct(pct)` di `format.ts` (menerima persen, bukan bps; nol `0,00%`, tanda `+`/`-`).
+- [x] Hitung 24 jam dari events (`latestTs`, base = event terakhir ≤ `latestTs - 86400`, fallback launch) di `PriceChart.tsx`; hapus `first.open` + `activeMeta` + label `dalam {label}`.
+- [x] Header pakai label `24J`/`24h` atau rentang berjalan; legend pakai `fmtSignedPct`; tambah catatan `belum ada trade`.
+- [x] Tambah kunci i18n + tooltip, cek duplikat dengan `check-i18n.cjs`.
+- [x] `npx tsc --noEmit`, `npm run build`, `check-i18n-pages.cjs`, `probe-pct.cjs`.
+- [x] Deploy `gh-pages`, verifikasi live, commit sumber ke `main`.
+
+### FE-11 · Logo header & pagination activity (selesai)
+- [x] Ganti SVG di anchor `aria-label="INERTIA · Overview"` dengan `assets/inertia-logo.png` (disalin ke `app/public/inertia-logo.png`, `<img>` 24x24, `alt=""` karena link sudah punya label).
+- [x] `/activity`: pagination 10 baris per halaman, tombol Sebelumnya/Berikutnya, indikator halaman, hanya 10 `<tr>` di DOM.
+- [x] Uji dengan 25 event sintetis: 3 halaman (10/10/5), tombol disabled di ujung, kembali ke halaman sebelumnya tetap benar.
+- [x] Catatan legacy v1 `GEov…RDE4H`: metadata Metaplex tidak ada dan mint authority sudah null, jadi Phantom selalu menampilkan `Token Tidak Diketahui`. Tidak bisa diperbaiki dari web; solusinya sembunyikan atau burn/close ATA v1 dari wallet pengguna.
 
 ### FE-8 · Verifikasi rilis frontend
 - [x] `npx tsc --noEmit` bersih; build statis 11 route sukses.

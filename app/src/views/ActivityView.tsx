@@ -106,7 +106,8 @@ export function ActivityView() {
       <ActivityTable
         events={events}
         loading={history.loading}
-        rows={40}
+        rows={10}
+        pageSize={10}
         filterable
         scroll={false}
       />

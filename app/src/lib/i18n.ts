@@ -85,12 +85,12 @@ const EN: Record<string, string> = {
     "{label} · needs {need} days of history ({have} now)",
   "{label} · bucket WIB": "{label} · WIB bucket",
   "Harga INRT / SOL": "INRT / SOL price",
-  "24 jam": "24h",
+  "24J": "24h",
   "belum ada trade": "no trades",
   "Perubahan 24 jam terhadap harga 24 jam lalu":
     "24-hour change against the price 24 hours ago",
-  "Perubahan sejak harga launch · riwayat belum 24 jam":
-    "Change since launch price · less than 24 hours of history",
+  "Perubahan sejak harga launch · riwayat baru {window}":
+    "Change since launch price · only {window} of history",
   "Pindah ke candle pertama sejak pool dibuat":
     "Jump to the first candle since pool creation",
   "Sejak launch": "Since launch",
@@ -113,6 +113,11 @@ const EN: Record<string, string> = {
   "SWAP · MASSA · SEED": "SWAP · MASS · SEED",
   "Menampilkan {shown} dari {total} event":
     "Showing {shown} of {total} events",
+  "Menampilkan {from}-{to} dari {total} event":
+    "Showing {from}-{to} of {total} events",
+  "Halaman {page} dari {total}": "Page {page} of {total}",
+  Sebelumnya: "Previous",
+  Berikutnya: "Next",
   "Muat lebih": "Load more",
   "Semua event termuat": "All events loaded",
   "Belum ada aktivitas swap": "No swap activity yet",

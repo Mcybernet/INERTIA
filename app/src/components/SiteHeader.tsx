@@ -9,7 +9,6 @@ import { shortAddr } from "@/lib/format";
 import { POOL_LABEL } from "@/lib/constants";
 import { useData } from "./DataProvider";
 import { useI18n } from "./LanguageProvider";
-import { Logo } from "./Logo";
 
 /** `usePathname()` bisa menyertakan basePath GitHub Pages. */
 function normalize(pathname: string): string {
@@ -36,7 +35,14 @@ export function SiteHeader() {
           className="flex shrink-0 items-center gap-2.5"
           aria-label="INERTIA · Overview"
         >
-          <Logo size={24} />
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/inertia-logo.png`}
+            alt=""
+            width={24}
+            height={24}
+            className="h-6 w-6 shrink-0"
+            decoding="async"
+          />
           <span className="text-[12px] font-medium tracking-[0.24em] text-fg">
             INERTIA
           </span>

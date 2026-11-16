@@ -39,6 +39,7 @@ export function ActivityTable({
   subtitle,
   emptyText = "Belum ada aktivitas swap",
   scroll = true,
+  pageSize,
 }: {
   events: HistoryEvent[];
   loading: boolean;
@@ -49,10 +50,13 @@ export function ActivityTable({
   subtitle?: string;
   emptyText?: string;
   scroll?: boolean;
+  /** Bila diisi, tabel memakai pagination dan hanya merender `pageSize` baris. */
+  pageSize?: number;
 }) {
   const { t } = useI18n();
   const [filter, setFilter] = useState<KindFilter>(initialFilter);
   const [visible, setVisible] = useState(rows);
+  const [page, setPage] = useState(0);
 
   const counts = useMemo(() => {
     const map: Record<KindFilter, number> = {
@@ -71,11 +75,16 @@ export function ActivityTable({
     [events, filter],
   );
   const list = useMemo(() => [...filtered].reverse(), [filtered]);
-  const shown = list.slice(0, visible);
+  const pageCount = pageSize ? Math.max(1, Math.ceil(list.length / pageSize)) : 1;
+  const safePage = pageSize ? Math.min(page, pageCount - 1) : 0;
+  const shown = pageSize
+    ? list.slice(safePage * pageSize, safePage * pageSize + pageSize)
+    : list.slice(0, visible);
 
   function changeFilter(next: KindFilter) {
     setFilter(next);
     setVisible(rows);
+    setPage(0);
   }
 
   return (
@@ -212,22 +221,60 @@ export function ActivityTable({
 
       {list.length > 0 ? (
         <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-          <span>
-            {t("Menampilkan {shown} dari {total} event", {
-              shown: shown.length,
-              total: list.length,
-            })}
-          </span>
-          {visible < list.length ? (
-            <button
-              type="button"
-              onClick={() => setVisible((v) => v + rows)}
-              className="chip py-1"
-            >
-              {t("Muat lebih")}
-            </button>
+          {pageSize ? (
+            <>
+              <span aria-live="polite">
+                {t("Menampilkan {from}-{to} dari {total} event", {
+                  from: safePage * pageSize + 1,
+                  to: safePage * pageSize + shown.length,
+                  total: list.length,
+                })}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPage(Math.max(0, safePage - 1))}
+                  disabled={safePage === 0}
+                  className="chip py-1 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {t("Sebelumnya")}
+                </button>
+                <span className="px-1">
+                  {t("Halaman {page} dari {total}", {
+                    page: safePage + 1,
+                    total: pageCount,
+                  })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                  disabled={safePage >= pageCount - 1}
+                  className="chip py-1 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {t("Berikutnya")}
+                </button>
+              </div>
+            </>
           ) : (
-            <span>{t("Semua event termuat")}</span>
+            <>
+              <span>
+                {t("Menampilkan {shown} dari {total} event", {
+                  shown: shown.length,
+                  total: list.length,
+                })}
+              </span>
+              {visible < list.length ? (
+                <button
+                  type="button"
+                  onClick={() => setVisible((v) => v + rows)}
+                  className="chip py-1"
+                >
+                  {t("Muat lebih")}
+                </button>
+              ) : (
+                <span>{t("Semua event termuat")}</span>
+              )}
+            </>
           )}
         </footer>
       ) : null}
