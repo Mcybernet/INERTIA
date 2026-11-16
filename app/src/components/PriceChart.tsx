@@ -105,6 +105,7 @@ export default function PriceChart({
   const guardRef = useRef(0);
   const scrollStartTfRef = useRef<number | null>(null);
   const lastTfRef = useRef<number | null>(null);
+  const userMovedRef = useRef(false);
   const timeframeRef = useRef(timeframe);
   timeframeRef.current = timeframe;
 
@@ -331,6 +332,24 @@ export default function PriceChart({
     return () => chart.unsubscribeCrosshairMove(handler);
   }, [candleByTime]);
 
+  // Setelah pengguna menggeser/zoom chart, jangan paksa fokus ke tengah lagi
+  // sampai halaman di-refresh atau timeframe diganti.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const mark = () => {
+      userMovedRef.current = true;
+    };
+    el.addEventListener("pointerdown", mark);
+    el.addEventListener("wheel", mark, { passive: true });
+    el.addEventListener("touchstart", mark, { passive: true });
+    return () => {
+      el.removeEventListener("pointerdown", mark);
+      el.removeEventListener("wheel", mark);
+      el.removeEventListener("touchstart", mark);
+    };
+  }, []);
+
   useEffect(() => {
     if (candlesTf !== timeframe) return;
     if (!candleRef.current || !volumeRef.current || !chartRef.current) return;
@@ -374,24 +393,34 @@ export default function PriceChart({
     const count = candles.length;
     const firstLoad = lastTfRef.current === null;
     const tfChanged = lastTfRef.current !== candlesTf;
-    const wasAtRight = timeScale.scrollPosition() < 1.5;
     const width = wrapRef.current?.clientWidth ?? 640;
 
+    let spacing = timeScale.options().barSpacing;
     if (count > 0 && (firstLoad || tfChanged)) {
       const slots = Math.max(count + 4, Math.round(width / 22));
-      const spacing = Math.max(4, Math.min(22, width / slots));
-      timeScale.applyOptions({ rightOffset: 4, barSpacing: spacing });
+      spacing = Math.max(4, Math.min(22, width / slots));
+      timeScale.applyOptions({ barSpacing: spacing });
     }
+
+    const visible = Math.max(12, width / spacing);
+    const center = count - 1;
 
     if (scrollStartTfRef.current === candlesTf && count > 0) {
       scrollStartTfRef.current = null;
-      const visible = Math.max(12, Math.min(count, Math.floor(width / 8)));
-      timeScale.setVisibleLogicalRange({ from: -0.5, to: visible - 0.5 });
-    } else if (count > 0 && (firstLoad || tfChanged || wasAtRight)) {
-      timeScale.scrollToRealTime();
+      const startVisible = Math.max(12, Math.min(count, Math.floor(width / 8)));
+      timeScale.setVisibleLogicalRange({ from: -0.5, to: startVisible - 0.5 });
+    } else if (count > 0 && (firstLoad || tfChanged || !userMovedRef.current)) {
+      // Default: candle terakhir di tengah layar (termasuk saat refresh),
+      // dengan ruang kosong seimbang di kiri dan kanan. `rightOffset`
+      // harus cukup besar agar lightweight-charts mengizinkan ruang kanan.
+      timeScale.applyOptions({ rightOffset: Math.ceil(visible / 2) + 2 });
+      timeScale.setVisibleLogicalRange({
+        from: center - visible / 2,
+        to: center + visible / 2,
+      });
     }
 
-    lastTfRef.current = candlesTf;
+    if (count > 0) lastTfRef.current = candlesTf;
   }, [candles, candlesTf, timeframe, scrollNonce]);
 
   const selectTimeframe = (tf: Timeframe) => {
@@ -404,6 +433,7 @@ export default function PriceChart({
     guardRef.current = now;
 
     scrollStartTfRef.current = null;
+    userMovedRef.current = false;
     setHover(null);
     setTimeframe(tf.seconds);
   };
@@ -413,6 +443,7 @@ export default function PriceChart({
     const launchBucket = bucketStart(launchTs, timeframe);
 
     if (candles[0]!.time <= launchBucket) {
+      userMovedRef.current = true;
       scrollStartTfRef.current = candlesTf;
       setScrollNonce((value) => value + 1);
       return;
@@ -430,6 +461,7 @@ export default function PriceChart({
       .sort((a, b) => a.seconds - b.seconds)[0];
 
     if (target && target.seconds !== timeframe) {
+      userMovedRef.current = true;
       scrollStartTfRef.current = target.seconds;
       setHover(null);
       setTimeframe(target.seconds);
