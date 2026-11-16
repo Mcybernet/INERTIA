@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/inertia-logo.png" alt="Logo token INERTIA (INRT)" width="120" height="120" />
+</p>
+
 # INERTIA — `INRT`
 
 Token Devnet-only tanpa bonding curve: likuiditas lahir langsung di pool
