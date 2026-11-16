@@ -11,7 +11,7 @@ keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan operasional repo.
 | Web live | https://mcybernet.github.io/INERTIA/ (mint/pool **v2**) |
 | Mint v2 | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` — 50 jt INRT, authority `null` |
 | Pool v2 | `6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV` — live, seed 4,8 SOL + 960 rb INRT |
-| Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,148 SOL |
+| Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,137 SOL |
 | Repo | publik, homepage/topics/LICENSE kosong |
 
 ---
@@ -92,6 +92,8 @@ berprefix.
 - [x] `scripts/devnet.sh seed D6AQ…C7Q6 4.8 960000` → 4,8 SOL + 960 rb INRT.
 - [x] `scripts/devnet.sh reserve D6AQ…C7Q6 9600000` → Mass Reserve 9,6 jt INRT.
 - [x] Distribusi owner 39,04 jt ke ATA `Eno3…Lj1L`; sisa 400 rb di payer.
+- [x] Uji on-chain: beli 0,01 SOL lalu jual kembali (fee vault ±0,00095 SOL).
+- [x] Kirim 0,01 SOL ke wallet owner agar ATA-nya bisa dipakai di Phantom.
 - [x] Cutover default `app/` ke v2, rebuild, deploy `gh-pages` `1595cbf`, verifikasi live.
 - [x] Update `README.md` + `app/README.md` dengan alamat v2.
 
