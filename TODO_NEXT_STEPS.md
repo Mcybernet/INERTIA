@@ -80,19 +80,22 @@ operasional repo.
 - [x] Semua halaman & komponen diterjemahkan; em dash `—` dihapus dari UI.
 - [x] Playwright: 7 halaman EN tanpa sisa kata Indonesia, switch dua arah, 360–1280 tanpa overflow.
 
-### FE-10 · Metrik persen chart (P0, sebagian siap)
+### FE-10 · Metrik persen chart (P0, keputusan final TradingView)
 
-**Bug yang bisa langsung diperbaiki (tanpa keputusan semantik):**
-- [ ] Nilai turun tidak menampilkan tanda minus (`fmtPct` absolut, `+` hanya untuk naik); perbaiki di header dan legend.
-- [ ] Nilai nol tampil `+0%`; samakan jadi `0,00%` tanpa tanda.
-- [ ] Label header jangan mengklaim timeframe selama semantik belum dipilih; pakai "sejak launch" / "since launch" sebagai label sementara.
+**Keputusan final (17 Nov 2026): ikuti konvensi TradingView.**
+- Header = perubahan **24 jam** terhadap harga 24 jam lalu, dengan label `24 jam` / `24h`. Selama riwayat pool belum 24 jam, fallback ke harga launch dengan label `sejak launch` / `since launch`. Angka header memang tidak berubah saat ganti timeframe (by design).
+- Legend OHLC = perubahan candle yang di-hover terhadap close candle sebelumnya (`close vs open`; ekuivalen karena `open` = prev close). Ini yang berubah saat ganti timeframe.
+- Format: tanda `-` untuk turun, `+` untuk naik, nol `0,00%` tanpa tanda; warna up/down, nol muted.
+- Candle flat (tanpa trade) diberi catatan `belum ada trade` / `no trades` supaya tidak terlihat rusak.
+- Metrik "sejak event pertama" tetap ada di `MarketPanel` Overview; tidak diduplikasi di chart.
 
-**Butuh keputusan semantik:**
-- [ ] Persen di header sekarang = `last.close` vs `first.open` (candle paling awal = launch), bukan per timeframe. Karena semua timeframe mulai dari launch, angkanya sama: terukur `+0,18%` di 1M/5M/15M/1J/4J.
-- [ ] Label `dalam {label}` / `over {label}` menyesatkan; angka baru berbeda saat batas 1.500 bar mulai memotong data (1M ±25 jam, 5M ±5 hari, 15M ±15,6 hari, 1J ±62 hari, 4J ±250 hari).
-- [ ] Opsi semantik: (A) perubahan candle berjalan per timeframe, (B) 24 jam tetap dengan label `24 jam`, (C) perubahan N bar, (D) tetap sejak launch + ganti label.
-- [ ] Rekomendasi: A untuk header, Δ legend tetap untuk candle hover; B opsional sebagai metrik kedua.
-- [ ] Setelah semantik dipilih: sesuaikan label ID/EN + kamus, lalu uji ulang Playwright.
+**Checklist implementasi:**
+- [ ] Tambah `fmtSignedPct(pct)` di `format.ts` (menerima persen, bukan bps; nol `0,00%`, tanda `+`/`-`).
+- [ ] Hitung 24 jam dari events (`latestTs`, base = event terakhir ≤ `latestTs - 86400`, fallback launch) di `PriceChart.tsx`; hapus `first.open` + `activeMeta` + label `dalam {label}`.
+- [ ] Header pakai label `24 jam`/`sejak launch`; legend pakai `fmtSignedPct`; tambah catatan `belum ada trade`.
+- [ ] Tambah kunci i18n + tooltip, cek duplikat dengan `check-i18n.cjs`.
+- [ ] `npx tsc --noEmit`, `npm run build`, `check-i18n-pages.cjs`, `probe-pct.cjs`.
+- [ ] Deploy `gh-pages`, verifikasi live, commit sumber ke `main`.
 
 ### FE-8 · Verifikasi rilis frontend
 - [x] `npx tsc --noEmit` bersih; build statis 11 route sukses.

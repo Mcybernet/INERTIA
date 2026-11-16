@@ -22,7 +22,7 @@ import {
 } from "@/lib/candles";
 import {
   EMPTY,
-  fmtPct,
+  fmtSignedPct,
   fmtPrice,
   fmtSolNumber,
   fmtWibClock,
@@ -30,11 +30,67 @@ import {
   fmtWibDay,
   getFormatLocale,
 } from "@/lib/format";
+import { priceToSol } from "@/lib/price";
 import type { Candle, HistoryEvent } from "@/lib/types";
 import { useI18n } from "./LanguageProvider";
 
 const UP = "#4FA57A";
 const DOWN = "#C76A6A";
+
+/** Header chart mengikuti konvensi exchange: perubahan 24 jam. */
+const DAY_SECONDS = 86_400;
+
+type ChangeMeta = { pct: number; mode: "24h" | "launch" };
+
+/**
+ * Perubahan harga untuk header.
+ *
+ * - Riwayat >= 24 jam: harga terakhir vs harga terakhir pada/paling dekat
+ *   sebelum `latestTs - 24 jam`.
+ * - Riwayat < 24 jam: fallback ke harga launch, dengan label "sejak launch".
+ *
+ * Sengaja tidak memakai candle timeframe aktif, supaya angkanya tetap sama
+ * saat pengguna berganti timeframe (seperti TradingView / exchange).
+ */
+function changeFromEvents(events: HistoryEvent[]): ChangeMeta {
+  let first: { ts: number; price: number } | null = null;
+  let latest: { ts: number; price: number } | null = null;
+
+  for (const event of events) {
+    if (event.timestamp <= 0) continue;
+    const price = priceToSol(event.priceAfter);
+    if (!(price > 0)) continue;
+    if (!first || event.timestamp < first.ts) {
+      first = { ts: event.timestamp, price };
+    }
+    if (!latest || event.timestamp > latest.ts) {
+      latest = { ts: event.timestamp, price };
+    }
+  }
+
+  if (!first || !latest) return { pct: 0, mode: "launch" };
+
+  if (latest.ts - first.ts < DAY_SECONDS) {
+    return {
+      pct: ((latest.price - first.price) / first.price) * 100,
+      mode: "launch",
+    };
+  }
+
+  const cutoff = latest.ts - DAY_SECONDS;
+  let base = first.price;
+  let baseTs = -Infinity;
+  for (const event of events) {
+    if (event.timestamp <= 0 || event.timestamp > cutoff) continue;
+    if (event.timestamp < baseTs) continue;
+    const price = priceToSol(event.priceAfter);
+    if (!(price > 0)) continue;
+    base = price;
+    baseTs = event.timestamp;
+  }
+
+  return { pct: ((latest.price - base) / base) * 100, mode: "24h" };
+}
 
 type IdleWindow = Window & {
   requestIdleCallback?: (
@@ -221,20 +277,22 @@ export default function PriceChart({
   }, [compute, eventsToken, spanSeconds, timeframe]);
 
   const last = candles.length > 0 ? candles[candles.length - 1]! : null;
-  const first = candles.length > 0 ? candles[0]! : null;
   const shown = hover ?? last;
-  const change =
-    last && first && first.open > 0
-      ? ((last.close - first.open) / first.open) * 100
-      : 0;
+  const changeMeta = useMemo(() => changeFromEvents(events), [events]);
+  const change = changeMeta.pct;
+  const changeTone =
+    change > 0 ? "text-up" : change < 0 ? "text-down" : "text-dim";
   const shownChange =
     shown && shown.open > 0
       ? ((shown.close - shown.open) / shown.open) * 100
       : 0;
-  const shownUp = shownChange >= 0;
+  const shownTone =
+    shownChange > 0
+      ? "text-up"
+      : shownChange < 0
+        ? "text-down"
+        : "text-dim";
   const volume = candles.reduce((acc, candle) => acc + candle.volume, 0);
-  const up = change >= 0;
-  const activeMeta = TIMEFRAMES.find((tf) => tf.seconds === timeframe);
 
   const candleByTime = useMemo(() => {
     const map = new Map<number, Candle>();
@@ -507,16 +565,18 @@ export default function PriceChart({
             <span className="mono text-[22px] leading-none text-fg">
               {last ? `${candlePrice(last.close)} SOL` : EMPTY}
             </span>
-            <span
-              className={`mono text-[11px] ${up ? "text-up" : "text-down"}`}
-            >
-              {change >= 0 ? "+" : ""}
-              {fmtPct(Math.round(Math.abs(change) * 100))}
+            <span className={`mono text-[11px] ${changeTone}`}>
+              {last ? fmtSignedPct(change) : EMPTY}
             </span>
-            <span className="text-[10px] text-dim">
-              {t("dalam {label}", {
-                label: activeMeta ? t(activeMeta.label) : EMPTY,
-              })}
+            <span
+              className="text-[10px] text-dim"
+              title={
+                changeMeta.mode === "24h"
+                  ? t("Perubahan 24 jam terhadap harga 24 jam lalu")
+                  : t("Perubahan sejak harga launch · riwayat belum 24 jam")
+              }
+            >
+              {changeMeta.mode === "24h" ? t("24 jam") : t("sejak launch")}
             </span>
           </div>
         </div>
@@ -583,12 +643,9 @@ export default function PriceChart({
               Δ
             </span>
             <span
-              className={`mono text-[10px] ${
-                shownUp ? "text-up" : "text-down"
-              }`}
+              className={`mono text-[10px] ${shownTone}`}
             >
-              {shownUp ? "+" : ""}
-              {fmtPct(Math.round(Math.abs(shownChange) * 100))}
+              {fmtSignedPct(shownChange)}
             </span>
           </span>
           <span className="flex items-baseline gap-1.5">
@@ -602,10 +659,9 @@ export default function PriceChart({
           <span className="text-[9px] uppercase tracking-label text-dim">
             {shown.trades > 0
               ? t("{n} trade", { n: shown.trades })
-              : null}
+              : t("belum ada trade")}
             {shown.mass > 0 ? ` · ${shown.mass} mass` : ""}
             {shown.launch ? " · launch" : ""}
-            {shown.synthetic ? " · flat" : ""}
           </span>
         </div>
       ) : null}

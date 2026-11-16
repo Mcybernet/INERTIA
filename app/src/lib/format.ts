@@ -107,6 +107,23 @@ export function fmtPct(bps: number, frac = 2): string {
   }).format(bps / 100)}%`;
 }
 
+/**
+ * Persen bertanda untuk perubahan harga. Menerima persen (bukan basis points).
+ * Nol selalu `0,00%` tanpa tanda; turun memakai `-`, naik memakai `+`.
+ */
+export function fmtSignedPct(pct: number, frac = 2): string {
+  const safe = Number.isFinite(pct) ? pct : 0;
+  const abs = Math.abs(safe);
+  const rounded = Number(abs.toFixed(frac));
+  const body = nf({
+    minimumFractionDigits: frac,
+    maximumFractionDigits: frac,
+  }).format(rounded);
+
+  if (rounded === 0) return `${body}%`;
+  return `${safe > 0 ? "+" : "-"}${body}%`;
+}
+
 export function fmtBps(bps: number): string {
   return `${nf({ maximumFractionDigits: 0 }).format(bps)} bps`;
 }
