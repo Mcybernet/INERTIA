@@ -125,9 +125,43 @@ berprefix.
 - [ ] `LICENSE` MIT.
 - [ ] Dokumentasikan status v1→v2 di README.
 
-## 4. Ditunda
+## 4. Lab Mass Well (2D mock → 3D dummy)
 
-- [ ] Prototipe 3D "Mass Well" (three.js). Status: **ditunda, belum diputuskan**; belum ada dependensi `three` atau kode 3D di repo. Bila dilanjutkan: route lab terpisah (bukan nav produksi), lazy-load, geometri flat tanpa gradient/glow/partikel sesuai `IDENTITY_INERTIA.md`, fallback 2D + `prefers-reduced-motion`, ukur bundle dan FPS di mobile.
+Tujuan: memilih representasi "Mass Well" untuk `/mass`. 2D adalah kandidat
+rilis; 3D hanya eksperimen sekali pakai dan tidak boleh masuk produksi tanpa
+keputusan akhir.
+
+### Fase 0 · Keputusan (blocking)
+- [ ] Pilih sumber `three` untuk lab: CDN (tanpa menyentuh `app/`) atau devDependency.
+- [ ] Pilih cakupan dummy: state sekarang + 1 state terisi, atau simulasi 60 hari / 40 `add_mass`.
+
+### Fase 1 · Kontrak data & fixture
+- [ ] Definisikan kontrak: kapasitas 10.000.000 INRT, `used = initial - reserve`, `feeVaultSol`, ambang 1 SOL + rent, daftar event `{ts, sol, token}`.
+- [ ] Buat fixture JSON: state 0%, 12% (3 mass), 60% (fee siap), 100%; plus timeline bila opsi 60 hari dipilih.
+- [ ] Tetapkan aturan visual: radius 0, border 1px, emas hanya aksen, tanpa gradient/glow/partikel, animasi hanya opacity/translasi, hormati `prefers-reduced-motion`.
+
+### Fase 2 · Mock 2D (baseline, kandidat rilis)
+- [ ] `lab/mass-well-2d.html` statis (SVG + CSS, tanpa library).
+- [ ] Empat state: `At Rest` (0%), sebagian, fee siap, setelah `add_mass`.
+- [ ] Desktop vertikal, mobile horizontal; label, nominal, tooltip, fokus keyboard.
+- [ ] A11y: `role="progressbar"`/ringkasan teks; tanpa console error; tanpa overflow 360–1440.
+
+### Fase 3 · Lab 3D dummy (eksperimen)
+- [ ] `lab/mass-well-3d.html`, `three` dimuat lazy; tidak menyentuh `app/`.
+- [ ] Kamera ortografis, material unlit/flat, edge 1px; tanpa bloom, partikel, auto-rotate.
+- [ ] Slider waktu + tombol state; default state 0% (bukan state penuh).
+- [ ] Fallback `prefers-reduced-motion` / WebGL tidak tersedia.
+- [ ] Catat FPS 390×844 dan ukuran bundle `three` (gzip) untuk bahan keputusan.
+
+### Fase 4 · Evaluasi & keputusan
+- [ ] Bandingkan 2D vs 3D dengan data identik: terbaca tanpa label, kejelasan state, konsistensi identitas.
+- [ ] Putuskan: pasang 2D ke `/mass`, buang 3D, atau lanjut 3D dengan data nyata.
+- [ ] Bila 2D dipasang: ganti bar "Masuk pool lewat add_mass" di `/mass`, tambah versi ringkas di Overview, update kamus ID/EN.
+- [ ] Bila 3D diadopsi: tentukan route, kebijakan bundle, fallback, dan ukur ulang performa produksi.
+
+## 5. Ditunda
+
+- [ ] Prototipe 3D "Mass Well" (three.js). Status: **disetujui sebagai lab dummy** (lihat §4), bukan fitur produksi; belum ada dependensi `three` atau kode 3D di repo.
 
 ## Definition of done hari ini
 
