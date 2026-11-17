@@ -1,0 +1,23 @@
+{
+  "name": "INERTIA",
+  "symbol": "INRT",
+  "description": "INERTIA (INRT): token Devnet tanpa bonding curve. Likuiditas lahir langsung di pool constant-product, fee 0,30% dikembalikan ke massa pool lewat add_mass. Tidak ada LP token, tidak ada instruksi tarik likuiditas, tidak ada burn. Scope: Devnet.",
+  "image": "https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@5ac6fa7/assets/inertia-logo.png",
+  "external_url": "https://github.com/Mcybernet/INERTIA",
+  "attributes": [
+    { "trait_type": "Network", "value": "Solana Devnet" },
+    { "trait_type": "Supply", "value": "50000000" },
+    { "trait_type": "Decimals", "value": "6" },
+    { "trait_type": "Fee", "value": "0.30%" },
+    { "trait_type": "Version", "value": "v5" }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@5ac6fa7/assets/inertia-logo.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image"
+  }
+}
