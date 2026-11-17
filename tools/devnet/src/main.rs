@@ -134,6 +134,7 @@ subcommand:
   sell       --mint <pubkey> --token <INRT> [--slippage-bps 50]
   reserve    --mint <pubkey> --token <INRT>     # isi Mass Reserve dari ATA payer
   add-mass   --mint <pubkey> --sol <SOL> [--slippage-bps 50]
+  refund     --mint <pubkey> --sol <SOL> --to <pubkey>
   help
 
 lingkungan:
@@ -276,6 +277,7 @@ fn run() -> Res<()> {
         "sell" => cmd_sell(&client, &payer, &flags),
         "reserve" => cmd_reserve(&client, &payer, &flags),
         "add-mass" => cmd_add_mass(&client, &payer, &flags),
+        "refund" => cmd_refund(&client, &payer, &flags),
         other => Err(format!("subcommand tidak dikenal: {other}").into()),
     }
 }
@@ -480,6 +482,31 @@ fn cmd_add_mass(client: &RpcClient, payer: &Keypair, flags: &HashMap<String, Str
             mass_reserve_vault: p.mass_reserve_vault,
             reserve_authority: p.reserve_authority,
             token_program: token_program(),
+            system_program: system_program(),
+        }
+        .to_account_metas(None),
+    );
+    send(client, payer, &[ix])
+}
+
+fn cmd_refund(client: &RpcClient, payer: &Keypair, flags: &HashMap<String, String>) -> Res<()> {
+    let mint = mint_of(flags)?;
+    let amount_lamports = parse_units(&need(flags, "sol")?, SOL_DECIMALS)?;
+    let destination = Pubkey::from_str(&need(flags, "to")?)?;
+    let p = pdas(&mint);
+
+    println!("refund  : {}", fmt_sol(amount_lamports));
+    println!("dari    : {}", p.sol_vault);
+    println!("ke      : {destination}");
+
+    let ix = Instruction::new_with_bytes(
+        inertia_mass::id(),
+        &inertia_mass::instruction::RefundLiquidity { amount_lamports }.data(),
+        inertia_mass::accounts::RefundLiquidity {
+            authority: payer.pubkey(),
+            pool: p.pool,
+            sol_vault: p.sol_vault,
+            destination,
             system_program: system_program(),
         }
         .to_account_metas(None),

@@ -45,4 +45,10 @@ pub mod inertia_mass {
     pub fn add_mass(ctx: Context<AddMass>, amount_sol: u64, max_token_in: u64) -> Result<()> {
         instructions::add_mass::handler(ctx, amount_sol, max_token_in)
     }
+
+    /// Dipakai hanya untuk menutup likuiditas Devnet dan mengembalikan SOL
+    /// ke alamat yang ditentukan `pool.authority`.
+    pub fn refund_liquidity(ctx: Context<RefundLiquidity>, amount_lamports: u64) -> Result<()> {
+        instructions::refund_liquidity::handler(ctx, amount_lamports)
+    }
 }

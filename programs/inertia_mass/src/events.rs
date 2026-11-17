@@ -40,6 +40,16 @@ pub struct SwapEvent {
 }
 
 #[event]
+pub struct LiquidityRefunded {
+    pub pool: Pubkey,
+    pub authority: Pubkey,
+    pub destination: Pubkey,
+    pub amount_lamports: u64,
+    pub reserve_sol_after: u64,
+    pub timestamp: i64,
+}
+
+#[event]
 pub struct MassAdded {
     pub pool: Pubkey,
     pub caller: Pubkey,

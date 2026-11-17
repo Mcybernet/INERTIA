@@ -38,4 +38,8 @@ pub enum MassError {
     InvalidDirection,
     #[msg("desimal mint bukan 6")]
     InvalidMintDecimals,
+    #[msg("pemanggil bukan authority pool")]
+    Unauthorized,
+    #[msg("saldo vault tidak cukup")]
+    InsufficientVaultLamports,
 }
