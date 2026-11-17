@@ -14,6 +14,8 @@ operasional repo.
 | Pool v3 | `GQxQApjSusModYFu5XCaS6CmquVmkxVX4cVeVvssDB2m` - live, seed 0,0288 SOL + 10 jt INRT |
 | Mint/pool v2 | legacy: `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` / `6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV` |
 | Mint v1 | legacy: `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H`, tanpa metadata |
+| Burn | 400.000 INRT v2 milik payer sudah dibakar; ATA v1/v2 ditutup |
+| Burn v1 owner | 39.040.000 INRT v1 di `86RAJ…a24C` masih ada, hanya bisa dibakar user dari Phantom |
 | Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,005 SOL (sisa sudah dikirim ke owner) |
 | Repo | publik, homepage/topics/LICENSE kosong |
 
