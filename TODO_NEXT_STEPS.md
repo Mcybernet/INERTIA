@@ -1,18 +1,20 @@
 # TODO — Next Steps INERTIA
 
 Diperbarui: 17 November 2026
-Status: **pool v2 live di Devnet**; web live memakai mint/pool v2, dua bahasa
-(ID/EN). Sisa pekerjaan: keeper `add_mass` (menunggu fee vault ≥ 1 SOL) dan
+Status: **pool v3 live di Devnet**; web live memakai mint/pool v3, dua bahasa
+(ID/EN). Sisa pekerjaan: keeper `add_mass` (menunggu fee vault >= 1 SOL) dan
 operasional repo.
 
 ## Status ringkas
 
 | Item | Kondisi |
 | --- | --- |
-| Web live | https://mcybernet.github.io/INERTIA/ (mint/pool **v2**) |
-| Mint v2 | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` — 50 jt INRT, authority `null` |
-| Pool v2 | `6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV` — live, seed 4,8 SOL + 960 rb INRT |
-| Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,137 SOL |
+| Web live | https://mcybernet.github.io/INERTIA/ (mint/pool **v3**) |
+| Mint v3 | `7NbE5QHNRUFYL97ZB2meYrYgLvJrMBJ685AsgNwhbksN` - 50 jt INRT, authority `null`, metadata + logo aktif |
+| Pool v3 | `GQxQApjSusModYFu5XCaS6CmquVmkxVX4cVeVvssDB2m` - live, seed 0,0288 SOL + 10 jt INRT |
+| Mint/pool v2 | legacy: `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` / `6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV` |
+| Mint v1 | legacy: `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H`, tanpa metadata |
+| Payer Devnet | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` = 0,005 SOL (sisa sudah dikirim ke owner) |
 | Repo | publik, homepage/topics/LICENSE kosong |
 
 ---

@@ -60,7 +60,7 @@ Keypair mint v2: `~/.config/solana/keys/inrt-mint-v2.json` (di luar git)
 | Program `inertia_mass` | `8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o` |
 | Upgrade authority | `86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C` |
 | Mint `INRT` v1 (legacy) | `GEovdGGfR75dLdYS5LABHR6sGf9s72fqDNkkaj9RDE4H` |
-| Mint `INRT` v2 (aktif di app) | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` |
+| Mint `INRT` v2 (legacy) | `D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6` |
 | Pool v1 (legacy) | `HobKvgdzXw4TPmR4XiUg45HVB2jqXuUXnDpuHqZdcPCM` |
 | Token vault | `HcmXidwTkTGRFTvJAx4bCj7Ebs5gJZmJVNakvBnpPJff` |
 | SOL vault | `9ymSmLaEgas8329MWfLomRPEvpurxPsGCJLPYxqkcUcy` |
@@ -117,6 +117,49 @@ INRT tetap di payer untuk operasional. `app/` sekarang menunjuk mint/pool v2
 secara default, tanpa env tambahan.
 `add_mass` belum dijalankan karena `fee_vault` masih di bawah 1 SOL
 (saat ini ±0,0009 SOL); jalur ini sudah terbukti di rehearsal lokal.
+
+## Mint v3 + metadata on-chain (17 Nov 2026)
+
+Mint v3 menggantikan v2. Metadata dibuat saat mint authority masih aktif, lalu
+authority dicabut. Logo di-pin ke commit tertentu supaya isi PNG tidak berubah:
+
+| Item | Address / nilai |
+|---|---|
+| Mint | `7NbE5QHNRUFYL97ZB2meYrYgLvJrMBJ685AsgNwhbksN` |
+| Metadata PDA | `GHcfo32Zz3LT4G4DCVDf3uJNzVtoweGRzrFHSnd7eqrv` |
+| Name / symbol | `INERTIA` / `INRT` |
+| URI metadata | `https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@main/assets/inertia-v3.json` |
+| Logo | `https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@5ac6fa7/assets/inertia-logo.png` (SHA-256 `3F052CE1036433B697568493233912244BE3D559B7EF01C7E2B808BBBC8289DC`) |
+| Update authority | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` |
+| Seller fee / mutable | 0 bps / `true` |
+| Supply / decimals | 50.000.000 / 6 |
+| Mint authority | `null` (dicabut) |
+| Freeze authority | `null` |
+
+### Pool v3 live (17 Nov 2026)
+
+| Item | Address / nilai |
+|---|---|
+| Pool | `GQxQApjSusModYFu5XCaS6CmquVmkxVX4cVeVvssDB2m` |
+| Token vault | `FxCrcCCtbqoELnVrjpxmd93j3p3J8UDEMtz4uH999AH1` |
+| SOL vault | `D9YmGunV5kR9oEiCNfbxr4UDGFDYi6VHqJm9dVnPXso2` |
+| Fee vault | `5fGGztuj7Y7XAzDHiVgPkDViUeHTrE4aMkAysGG3UpB8` |
+| Mass Reserve vault | `Gcoc9k9PkV6SFxW1hs2Km4NVqwwnJu5YQd6XpR23Vquf` |
+| ATA owner | `2v9BXJACuRSNv9BZRVxbUjV9UrJgtwjCmmQyCnLHoSGT` |
+| Harga awal | `0,00000000288 SOL/INRT` (2,88e-9) |
+| Likuiditas | 0,0288 SOL + 10.000.000 INRT |
+| Mass Reserve | 9.600.000 INRT |
+| Owner | 30.400.000 INRT |
+
+Pool v3 di-seed `0,0288 SOL + 10 jt INRT` dengan rasio harga yang sama seperti
+v2 (`2,88e-9 SOL/INRT`), tetapi kedalaman pool lebih kecil karena saldo payer
+Devnet terbatas. Sisa 30,4 jt INRT dikirim ke ATA owner. Tiga swap kecil
+dijalankan saat launch supaya chart dan activity punya data awal. `add_mass`
+tetap belum bisa dijalankan karena `fee_vault` jauh di bawah 1 SOL.
+
+Token v2 yang dipegang payer (400.000 INRT) sudah dibakar dan ATA-nya ditutup.
+Pool v2 dan Mass Reserve v2 tidak bisa dikosongkan karena program tidak punya
+instruksi burn/close/withdraw.
 
 ## Frontend (`app/`)
 

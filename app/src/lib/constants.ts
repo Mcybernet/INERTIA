@@ -10,10 +10,10 @@ export const PROGRAM_ID = new PublicKey(
  * `NEXT_PUBLIC_MINT`, `NEXT_PUBLIC_POOL`, dan `NEXT_PUBLIC_OWNER_ATA`
  * tetap bisa menimpa tanpa mengubah kode.
  */
-const DEFAULT_MINT = "D6AQTpVJdWpBMb6i1cMFit58rtgCiTPNXpFNQGJoC7Q6";
-const DEFAULT_POOL = "6Da5fRHLjzErcjGsqHzjEc4tp15Mkp9A3grJwJtsk3oV";
+const DEFAULT_MINT = "7NbE5QHNRUFYL97ZB2meYrYgLvJrMBJ685AsgNwhbksN";
+const DEFAULT_POOL = "GQxQApjSusModYFu5XCaS6CmquVmkxVX4cVeVvssDB2m";
 const DEFAULT_OWNER = "86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C";
-const DEFAULT_OWNER_ATA = "Eno3Lpj4C7fwXHa6X1LQSkLPLVZrigs4xPcr2J9oLj1L";
+const DEFAULT_OWNER_ATA = "2v9BXJACuRSNv9BZRVxbUjV9UrJgtwjCmmQyCnLHoSGT";
 
 function env(name: string, fallback: string): string {
   const value = process.env[name];
@@ -29,7 +29,7 @@ export const POOL_OVERRIDE: PublicKey | null = env("NEXT_PUBLIC_POOL", DEFAULT_P
   : null;
 
 /** Label generasi peluncuran yang sedang dipakai UI. */
-export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v2");
+export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v3");
 
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
@@ -71,7 +71,11 @@ export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
 export const OWNER_ADDRESS = env("NEXT_PUBLIC_OWNER", DEFAULT_OWNER);
 export const OWNER_ATA = env("NEXT_PUBLIC_OWNER_ATA", DEFAULT_OWNER_ATA);
 export const KNOWN_ACCOUNTS: Record<string, string> = {
-  // v2 (aktif)
+  // v3 (aktif)
+  "FxCrcCCtbqoELnVrjpxmd93j3p3J8UDEMtz4uH999AH1": "POOL VAULT",
+  "Gcoc9k9PkV6SFxW1hs2Km4NVqwwnJu5YQd6XpR23Vquf": "MASS RESERVE",
+  "2v9BXJACuRSNv9BZRVxbUjV9UrJgtwjCmmQyCnLHoSGT": "OWNER",
+  // v2 (legacy)
   "EkEChvJiCKhE46mSCAaLwkMFFef5dhwk6J8QrkK2JdgG": "POOL VAULT",
   "5N5CsAhPqgcpHQqorcv19P5bCquFigA9N7HmrhyjZQCA": "MASS RESERVE",
   "Eno3Lpj4C7fwXHa6X1LQSkLPLVZrigs4xPcr2J9oLj1L": "OWNER",
