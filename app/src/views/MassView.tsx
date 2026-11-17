@@ -109,7 +109,7 @@ function MassBody({ snapshot }: { snapshot: PoolSnapshot }) {
         <Panel>
           <PanelHeader
             title={t("Reserve terpakai")}
-            subtitle={t("10.000.000 INRT awal")}
+            subtitle={t("9.600.000 INRT awal")}
             right={
               <span className="mono text-[10px] text-dim">
                 {fmtTokenInt(used)} INRT

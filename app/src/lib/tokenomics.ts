@@ -12,15 +12,15 @@ export type Allocation = {
 export const ALLOCATIONS: Allocation[] = [
   {
     name: "Pool · The Mass",
-    raw: 9_600_000n * 1_000_000n,
-    pct: "19,2%",
+    raw: 10_000_000n * 1_000_000n,
+    pct: "20,0%",
     note: "Terkunci permanen di pool, tanpa instruksi penarikan.",
     locked: true,
   },
   {
     name: "Mass Reserve",
-    raw: 10_000_000n * 1_000_000n,
-    pct: "20,0%",
+    raw: 9_600_000n * 1_000_000n,
+    pct: "19,2%",
     note: "Hanya bisa masuk pool lewat add_mass.",
     locked: true,
   },
@@ -56,12 +56,16 @@ export const ALLOCATIONS: Allocation[] = [
 
 export const TOTAL_SUPPLY_RAW = SUPPLY_RAW;
 
+/**
+ * Angka launch on-chain v3 (Devnet). Kedalaman pool dibatasi saldo SOL payer,
+ * jadi harga dan FDV di sini jauh lebih kecil dari rencana mainnet.
+ */
 export const LAUNCH = {
-  priceSol: "0,000005",
-  poolToken: "9.600.000",
-  poolSol: "4,8",
-  fdvSol: "250",
-  marketCapSol: "48",
+  priceSol: "0,00000000288",
+  poolToken: "10.000.000",
+  poolSol: "0,0288",
+  fdvSol: "0,144",
+  marketCapSol: "0,0288",
   feeBps: 30,
 } as const;
 
@@ -85,7 +89,7 @@ export const TIER_RATES: TierRate[] = [
 ];
 
 export const VESTING = [
-  { time: "Launch (M0)", circulating: "9.600.000", pct: "19,2%" },
+  { time: "Launch (M0)", circulating: "10.000.000", pct: "20,0%" },
   { time: "M6", circulating: "±16.100.000", pct: "32,2%" },
   { time: "M12", circulating: "±26.950.000", pct: "53,9%" },
   { time: "M24", circulating: "±35.650.000", pct: "71,3%" },

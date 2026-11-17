@@ -238,7 +238,7 @@ const EN: Record<string, string> = {
   "minimum 1 SOL + rent": "minimum 1 SOL + rent",
   "interval {n} detik": "{n}s interval",
   "Reserve terpakai": "Reserve used",
-  "10.000.000 INRT awal": "10,000,000 INRT initial",
+  "9.600.000 INRT awal": "9,600,000 INRT initial",
   "Masuk pool lewat add_mass": "Entered the pool through add_mass",
   "Mass Reserve tidak punya instruksi withdraw; hanya add_mass yang bisa memindahkannya.":
     "The Mass Reserve has no withdraw instruction; only add_mass can move it.",
@@ -578,8 +578,12 @@ const EN: Record<string, string> = {
   "constant product": "constant product",
   "50.000.000": "50,000,000",
   "10.000.000 INRT": "10,000,000 INRT",
+  "9.600.000 INRT": "9,600,000 INRT",
   "9.600.000": "9,600,000",
   "0,000005": "0.000005",
+  "0,00000000288": "0.00000000288",
+  "0,0288": "0.0288",
+  "0,144": "0.144",
   "4,8": "4.8",
 };
 

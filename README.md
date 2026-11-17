@@ -149,13 +149,15 @@ authority dicabut. Logo di-pin ke commit tertentu supaya isi PNG tidak berubah:
 | Harga awal | `0,00000000288 SOL/INRT` (2,88e-9) |
 | Likuiditas | 0,0288 SOL + 10.000.000 INRT |
 | Mass Reserve | 9.600.000 INRT |
-| Owner | 30.400.000 INRT |
+| Owner | 30.400.000 INRT (alokasi) |
 
 Pool v3 di-seed `0,0288 SOL + 10 jt INRT` dengan rasio harga yang sama seperti
 v2 (`2,88e-9 SOL/INRT`), tetapi kedalaman pool lebih kecil karena saldo payer
 Devnet terbatas. Sisa 30,4 jt INRT dikirim ke ATA owner. Tiga swap kecil
-dijalankan saat launch supaya chart dan activity punya data awal. `add_mass`
-tetap belum bisa dijalankan karena `fee_vault` jauh di bawah 1 SOL.
+dijalankan saat launch supaya chart dan activity punya data awal; token hasil
+swap terakhir (334.597,431466 INRT) juga dikirim ke owner, sehingga saldo owner
+saat ini 30.734.597,431466 INRT. `add_mass` tetap belum bisa dijalankan karena
+`fee_vault` jauh di bawah 1 SOL.
 
 Token v2 yang dipegang payer (400.000 INRT) sudah dibakar dan ATA-nya ditutup.
 Pool v2 dan Mass Reserve v2 tidak bisa dikosongkan karena program tidak punya

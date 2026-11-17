@@ -92,8 +92,8 @@ export const MIN_MASS_SOL = 1_000_000_000n;
 export const MASS_CAP_BPS = 500;
 export const MASS_RATIO_TOL_BPS = 50;
 
-/** Alokasi Mass Reserve di launch (10.000.000 INRT). */
-export const MASS_RESERVE_SUPPLY_RAW = 10_000_000n * TOKEN_UNIT;
+/** Alokasi Mass Reserve di launch v3 (9.600.000 INRT). */
+export const MASS_RESERVE_SUPPLY_RAW = 9_600_000n * TOKEN_UNIT;
 
 /** Rent minimum saat membuat ATA. */
 export const RENT_EXEMPT_MIN = 890_880n;

@@ -36,9 +36,7 @@ export function TokenomicsView() {
         <StatCard
           label={t("Harga awal (P0)")}
           value={`${t(LAUNCH.priceSol)} SOL`}
-          sub={t("{n} INRT di pool", {
-            n: fmtTokenInt(9_600_000n * 1_000_000n),
-          })}
+          sub={t("{n} INRT di pool", { n: LAUNCH.poolToken })}
           accent
         />
         <StatCard
@@ -93,6 +91,11 @@ export function TokenomicsView() {
               );
             })}
           </div>
+          <p className="border-t border-line px-4 py-3 text-[10px] leading-relaxed text-dim">
+            {t(
+              "Di Devnet v3, pool di-seed 10.000.000 INRT + 0,0288 SOL dan Mass Reserve 9.600.000 INRT. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.",
+            )}
+          </p>
         </Panel>
 
         <div className="flex flex-col gap-3">
@@ -239,7 +242,7 @@ export function TokenomicsView() {
         <Panel>
           <PanelHeader
             title={t("Kebijakan Mass Reserve")}
-            subtitle={t("20% supply")}
+            subtitle={t("19,2% supply")}
             right={
               <Link href="/mass" className="chip py-1">
                 {t("Status live →")}
@@ -249,7 +252,7 @@ export function TokenomicsView() {
           <div className="grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label={t("Alokasi awal")}
-              value={t("10.000.000 INRT")}
+              value={t("9.600.000 INRT")}
               sub={t("hanya untuk add_mass")}
             />
             <StatCard
@@ -260,7 +263,7 @@ export function TokenomicsView() {
             <StatCard
               label={t("Maksimum per panggilan")}
               value={t("{pct}% sisa reserve", { pct: MASS_CAP_BPS / 100 })}
-              sub={t("500.000 INRT di awal")}
+              sub={t("480.000 INRT di awal")}
             />
             <StatCard
               label={t("Toleransi rasio")}
