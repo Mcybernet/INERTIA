@@ -51,6 +51,12 @@ export function TokenomicsView() {
         />
       </StatGrid>
 
+      <p className="mt-2 border border-line px-4 py-2.5 text-[10px] leading-relaxed text-dim">
+        {t(
+          "Angka harga dan FDV di atas adalah snapshot saat launch, bukan harga live. Lihat halaman Trade untuk harga dan reserve terkini.",
+        )}
+      </p>
+
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Panel>
           <PanelHeader
@@ -93,7 +99,7 @@ export function TokenomicsView() {
           </div>
           <p className="border-t border-line px-4 py-3 text-[10px] leading-relaxed text-dim">
             {t(
-              "Di Devnet v3, pool di-seed 10.000.000 INRT + 0,0288 SOL dan Mass Reserve 9.600.000 INRT. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.",
+              "Di Devnet v3, pool di-seed 10.000.000 INRT + 0,0288 SOL dan Mass Reserve 9.600.000 INRT. Itu kondisi awal, bukan saldo pool saat ini. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.",
             )}
           </p>
         </Panel>
