@@ -99,7 +99,7 @@ export function TokenomicsView() {
           </div>
           <p className="border-t border-line px-4 py-3 text-[10px] leading-relaxed text-dim">
             {t(
-              "Di Devnet v3, pool di-seed 10.000.000 INRT + 0,0288 SOL dan Mass Reserve 9.600.000 INRT. Itu kondisi awal, bukan saldo pool saat ini. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.",
+              "Di Devnet v5, pool di-seed 10.000.000 INRT + 50 SOL dan Mass Reserve 9.600.000 INRT. Itu kondisi awal, bukan saldo pool saat ini. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.",
             )}
           </p>
         </Panel>

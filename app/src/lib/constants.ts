@@ -6,14 +6,14 @@ export const PROGRAM_ID = new PublicKey(
 );
 
 /**
- * Alamat default = peluncuran v2 (cutover 17 Nov 2026). Env
+ * Alamat default = peluncuran v5 (cutover 18 Nov 2026). Env
  * `NEXT_PUBLIC_MINT`, `NEXT_PUBLIC_POOL`, dan `NEXT_PUBLIC_OWNER_ATA`
  * tetap bisa menimpa tanpa mengubah kode.
  */
-const DEFAULT_MINT = "7NbE5QHNRUFYL97ZB2meYrYgLvJrMBJ685AsgNwhbksN";
-const DEFAULT_POOL = "GQxQApjSusModYFu5XCaS6CmquVmkxVX4cVeVvssDB2m";
+const DEFAULT_MINT = "2jQSLeDgDqq5B2DuckC4Koyib3tGcQZqvnznxWywePYH";
+const DEFAULT_POOL = "FQjcuebVy8ThJrcYBYYdoPqL6ThtPRbchZ3MbaTtZyAk";
 const DEFAULT_OWNER = "86RAJdtpYWeq9vmcpYNzLCVdcFpC5vacwFfdDrXPa24C";
-const DEFAULT_OWNER_ATA = "2v9BXJACuRSNv9BZRVxbUjV9UrJgtwjCmmQyCnLHoSGT";
+const DEFAULT_OWNER_ATA = "7SpE7FWxwfxA4QPD3SpoPf7gUK3FiXMH2fBHLjDn6dvm";
 
 function env(name: string, fallback: string): string {
   const value = process.env[name];
@@ -29,7 +29,7 @@ export const POOL_OVERRIDE: PublicKey | null = env("NEXT_PUBLIC_POOL", DEFAULT_P
   : null;
 
 /** Label generasi peluncuran yang sedang dipakai UI. */
-export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v3");
+export const POOL_LABEL = env("NEXT_PUBLIC_POOL_LABEL", "v5");
 
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL ?? "https://api.devnet.solana.com";
@@ -71,7 +71,11 @@ export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
 export const OWNER_ADDRESS = env("NEXT_PUBLIC_OWNER", DEFAULT_OWNER);
 export const OWNER_ATA = env("NEXT_PUBLIC_OWNER_ATA", DEFAULT_OWNER_ATA);
 export const KNOWN_ACCOUNTS: Record<string, string> = {
-  // v3 (aktif)
+  // v5 (aktif)
+  "EsEHSUMSTBKMU8Kgj5KpJ7w1GCR3ZjHMWnC6bwZiZu2Z": "POOL VAULT",
+  "8uvZK3yAY6JUW6SpqvMppgojdUBDjGsgc4vZsHFyNLx9": "MASS RESERVE",
+  "7SpE7FWxwfxA4QPD3SpoPf7gUK3FiXMH2fBHLjDn6dvm": "OWNER",
+  // v3 (legacy)
   "FxCrcCCtbqoELnVrjpxmd93j3p3J8UDEMtz4uH999AH1": "POOL VAULT",
   "Gcoc9k9PkV6SFxW1hs2Km4NVqwwnJu5YQd6XpR23Vquf": "MASS RESERVE",
   "2v9BXJACuRSNv9BZRVxbUjV9UrJgtwjCmmQyCnLHoSGT": "OWNER",
@@ -92,7 +96,7 @@ export const MIN_MASS_SOL = 1_000_000_000n;
 export const MASS_CAP_BPS = 500;
 export const MASS_RATIO_TOL_BPS = 50;
 
-/** Alokasi Mass Reserve di launch v3 (9.600.000 INRT). */
+/** Alokasi Mass Reserve di launch v5 (9.600.000 INRT). */
 export const MASS_RESERVE_SUPPLY_RAW = 9_600_000n * TOKEN_UNIT;
 
 /** Rent minimum saat membuat ATA. */

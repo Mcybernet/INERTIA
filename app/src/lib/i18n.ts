@@ -430,8 +430,8 @@ const EN: Record<string, string> = {
   "100% ke massa, 0% treasury": "100% to the mass, 0% treasury",
   Alokasi: "Allocation",
   "6 kategori, total 100%": "6 categories, 100% total",
-  "Di Devnet v3, pool di-seed 10.000.000 INRT + 0,0288 SOL dan Mass Reserve 9.600.000 INRT. Itu kondisi awal, bukan saldo pool saat ini. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.":
-    "On Devnet v3, the pool was seeded with 10,000,000 INRT + 0.0288 SOL and a Mass Reserve of 9,600,000 INRT. Those are the initial figures, not the current pool balance. The treasury, team, community, and ecosystem categories still sit in one owner wallet; separation comes later on mainnet.",
+  "Di Devnet v5, pool di-seed 10.000.000 INRT + 50 SOL dan Mass Reserve 9.600.000 INRT. Itu kondisi awal, bukan saldo pool saat ini. Kategori treasury, tim, komunitas, dan ekosistem masih berada di satu wallet owner; pemisahannya menyusul di mainnet.":
+    "On Devnet v5, the pool was seeded with 10,000,000 INRT + 50 SOL and a Mass Reserve of 9,600,000 INRT. Those are the initial figures, not the current pool balance. The treasury, team, community, and ecosystem categories still sit in one owner wallet; separation comes later on mainnet.",
   terkunci: "locked",
   "Ke mana fee pergi": "Where fees go",
   "per swap": "per swap",
@@ -587,10 +587,6 @@ const EN: Record<string, string> = {
   "9.600.000 INRT": "9,600,000 INRT",
   "9.600.000": "9,600,000",
   "0,000005": "0.000005",
-  "0,00000000288": "0.00000000288",
-  "0,0288": "0.0288",
-  "0,144": "0.144",
-  "4,8": "4.8",
 };
 
 function applyVars(text: string, vars?: Vars): string {

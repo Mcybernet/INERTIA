@@ -57,15 +57,15 @@ export const ALLOCATIONS: Allocation[] = [
 export const TOTAL_SUPPLY_RAW = SUPPLY_RAW;
 
 /**
- * Angka launch on-chain v3 (Devnet). Kedalaman pool dibatasi saldo SOL payer,
- * jadi harga dan FDV di sini jauh lebih kecil dari rencana mainnet.
+ * Angka launch on-chain v5 (Devnet): 10.000.000 INRT + 50 SOL di pool,
+ * Mass Reserve 9.600.000 INRT. Ini snapshot awal, bukan saldo pool terkini.
  */
 export const LAUNCH = {
-  priceSol: "0,00000000288",
+  priceSol: "0,000005",
   poolToken: "10.000.000",
-  poolSol: "0,0288",
-  fdvSol: "0,144",
-  marketCapSol: "0,0288",
+  poolSol: "50",
+  fdvSol: "250",
+  marketCapSol: "50",
   feeBps: 30,
 } as const;
 

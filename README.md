@@ -27,7 +27,7 @@ Tidak ada instruksi tarik likuiditas, tidak ada LP token, tidak ada burn.
 ```
 programs/inertia_mass/      program Anchor (lib.rs, state, math, instructions)
 programs/inertia_mass/tests/test_pool.rs   test LiteSVM (in-process)
-tools/devnet/               CLI Rust `inertia-devnet` (init/seed/swap/reserve/status)
+tools/devnet/               CLI Rust `inertia-devnet` (init/seed/swap/reserve/status/refund)
 app/                        dashboard Next.js + wallet buy/sell (Devnet)
 scripts/devnet.sh           wrapper build/deploy/mint/init/seed + guard Devnet
 target/deploy/              hasil build (di-gitignore)
@@ -37,6 +37,7 @@ Program ID: `8nxgCR4TW9K7zh5hb9ntW5dKRFumbdL4BxaaR1oWn86o`
 Keypair deploy: `target/deploy/inertia_mass-keypair.json` (di luar git)
 Keypair mint v1: `~/.config/solana/keys/inrt-mint.json` (di luar git)
 Keypair mint v2: `~/.config/solana/keys/inrt-mint-v2.json` (di luar git)
+Keypair mint v5: `~/.config/solana/keys/inrt-mint-v5.json` (di luar git)
 
 ## Wallet
 
@@ -52,6 +53,46 @@ Keypair mint v2: `~/.config/solana/keys/inrt-mint-v2.json` (di luar git)
   address pemilik; Mass Reserve tetap di vault milik PDA program.
 - Private key tidak pernah diminta, ditampilkan, atau di-commit. Cek dengan
   `scripts/devnet.sh wallets`.
+
+## Status aktif: Devnet v5 (18 Nov 2026)
+
+Generasi yang dipakai web adalah **v5**. Mint dan pool di bawah ini menjadi
+default `app/` tanpa env tambahan. Generasi v1–v4 adalah legacy; pool v4 sudah
+ditutup (`sol_reserve 0`, `seeded false`) dan 50 SOL-nya dikembalikan lewat
+instruksi `refund_liquidity`.
+
+### Mint v5 + metadata on-chain
+
+| Item | Address / nilai |
+|---|---|
+| Mint | `2jQSLeDgDqq5B2DuckC4Koyib3tGcQZqvnznxWywePYH` |
+| Metadata PDA | `BwCkAke1f8frQCcxD9MtQACMnPfU5d5E2RGzXT5QDavw` |
+| Name / symbol | `INERTIA` / `INRT` |
+| URI metadata | `https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@main/assets/inertia-v5.json` |
+| Logo | `https://cdn.jsdelivr.net/gh/Mcybernet/INERTIA@5ac6fa7/assets/inertia-logo.png` |
+| Update authority | `Gb6zQbxTvh65TSx8aQ6gqYCtrfPnribiqxBgo73yxKgt` |
+| Supply / decimals | 50.000.000 / 6 |
+| Mint authority | `null` (dicabut paling terakhir) |
+| Freeze authority | `null` |
+
+### Pool v5 live
+
+| Item | Address / nilai |
+|---|---|
+| Pool | `FQjcuebVy8ThJrcYBYYdoPqL6ThtPRbchZ3MbaTtZyAk` |
+| Token vault | `EsEHSUMSTBKMU8Kgj5KpJ7w1GCR3ZjHMWnC6bwZiZu2Z` |
+| SOL vault | `9N42rdcSHgVtKxeAxjNFVX8VjnMNsNKMQSHMHpFChfeK` |
+| Mass Reserve vault | `8uvZK3yAY6JUW6SpqvMppgojdUBDjGsgc4vZsHFyNLx9` |
+| ATA owner | `7SpE7FWxwfxA4QPD3SpoPf7gUK3FiXMH2fBHLjDn6dvm` |
+| Harga awal | `0,000005 SOL/INRT` (FDV 250 SOL) |
+| Likuiditas | 50 SOL + 10.000.000 INRT |
+| Fee / interval | 30 bps / 60 s |
+| Mass Reserve | 9.600.000 INRT |
+| Owner | 30.400.000 INRT |
+
+Urutan eksekusi v5: mint → metadata Metaplex → init pool → seed → alokasi →
+revoke mint authority. Program di-upgrade ke data length 249.576 byte agar
+instruksi `refund_liquidity` tersedia.
 
 ## Devnet — pool v1 (legacy, 14 Nov 2026)
 
@@ -113,12 +154,12 @@ permanen. Mint v2 dibuat dengan supply yang sama plus metadata on-chain:
 
 Pool di-seed `4,8 SOL + 960.000 INRT` (harga awal `0,000005 SOL/INRT`);
 Mass Reserve diisi 9,6 jt INRT; 39,04 jt INRT dikirim ke ATA owner; 400 rb
-INRT tetap di payer untuk operasional. `app/` sekarang menunjuk mint/pool v2
-secara default, tanpa env tambahan.
+INRT tetap di payer untuk operasional. `app/` dulu menunjuk mint/pool v2
+secara default; sekarang default-nya v5.
 `add_mass` belum dijalankan karena `fee_vault` masih di bawah 1 SOL
 (saat ini ±0,0009 SOL); jalur ini sudah terbukti di rehearsal lokal.
 
-## Mint v3 + metadata on-chain (17 Nov 2026)
+## Mint v3 + metadata on-chain (17 Nov 2026, legacy)
 
 Mint v3 menggantikan v2. Metadata dibuat saat mint authority masih aktif, lalu
 authority dicabut. Logo di-pin ke commit tertentu supaya isi PNG tidak berubah:
@@ -136,7 +177,7 @@ authority dicabut. Logo di-pin ke commit tertentu supaya isi PNG tidak berubah:
 | Mint authority | `null` (dicabut) |
 | Freeze authority | `null` |
 
-### Pool v3 live (17 Nov 2026)
+### Pool v3 live (17 Nov 2026, legacy)
 
 | Item | Address / nilai |
 |---|---|

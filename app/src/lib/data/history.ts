@@ -19,8 +19,8 @@ const FRESH_STORAGE_MS = 3 * 60_000;
 const STALE_MS = 6 * 60 * 60_000;
 const MAX_EVENTS = 600;
 const MAX_FETCH = 40;
-// Key per mint: saat cutover ke pool v2, riwayat v1 tidak tercampur.
-const STORAGE_KEY = `inrt:history:v4:${MINT.toBase58()}`;
+// Key per mint: saat cutover ke pool v5, riwayat generasi lama tidak tercampur.
+const STORAGE_KEY = `inrt:history:v5:${MINT.toBase58()}`;
 const LAUNCH_KEY = `inrt:launch:v1:${MINT.toBase58()}`;
 /** Hasil negatif (tidak ada seed) dicoba ulang setelah 1 jam. */
 const LAUNCH_RETRY_MS = 60 * 60_000;
