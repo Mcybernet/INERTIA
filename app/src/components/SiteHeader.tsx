@@ -61,7 +61,34 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ink">
-      <div className="mx-auto flex h-14 max-w-[1480px] items-center gap-3 px-4 lg:px-6">
+      <div className="mx-auto flex h-14 max-w-[1480px] items-center gap-2 px-4 lg:gap-3 lg:px-6">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? t("Tutup navigasi") : t("Buka navigasi")}
+          aria-expanded={open}
+          aria-controls="nav-mobile"
+          className="btn btn-ghost h-[34px] w-[34px] shrink-0 px-0 lg:hidden"
+        >
+          <span className="relative block h-4 w-4" aria-hidden>
+            <span
+              className={`absolute left-0 top-[3px] block h-px w-4 bg-current motion-safe:transition-transform motion-safe:duration-200 ${
+                open ? "translate-y-[4px] rotate-45" : ""
+              }`}
+            />
+            <span
+              className={`absolute left-0 top-[7px] block h-px w-4 bg-current motion-safe:transition-opacity motion-safe:duration-150 ${
+                open ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <span
+              className={`absolute left-0 top-[11px] block h-px w-4 bg-current motion-safe:transition-transform motion-safe:duration-200 ${
+                open ? "-translate-y-[4px] -rotate-45" : ""
+              }`}
+            />
+          </span>
+        </button>
+
         <Link
           href="/"
           className="flex shrink-0 items-center gap-2.5"
@@ -174,17 +201,6 @@ export function SiteHeader() {
           </button>
 
           <WalletMultiButton />
-
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? t("Tutup navigasi") : t("Buka navigasi")}
-            aria-expanded={open}
-            aria-controls="nav-mobile"
-            className="btn btn-ghost h-[34px] px-2.5 lg:hidden"
-          >
-            <span aria-hidden>{open ? "✕" : "☰"}</span>
-          </button>
         </div>
       </div>
 
@@ -192,7 +208,7 @@ export function SiteHeader() {
         <nav
           id="nav-mobile"
           aria-label={t("Navigasi utama mobile")}
-          className="border-t border-line bg-ink-1 lg:hidden"
+          className="border-t border-line bg-ink-1 motion-safe:animate-riseIn lg:hidden"
         >
           <ul className="grid grid-cols-2 gap-px bg-line">
             {NAV.map((item) => {

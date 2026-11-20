@@ -110,6 +110,13 @@ body {
   box-shadow: none !important;
 }
 
+/* Hamburger pindah ke kiri, ruang header mobile perlu sedikit hemat. */
+@media (max-width: 639px) {
+  .wallet-adapter-button-trigger {
+    padding: 0 10px !important;
+  }
+}
+
 .wallet-adapter-button .wallet-adapter-button-start-icon,
 .wallet-adapter-button img {
   width: 16px !important;
