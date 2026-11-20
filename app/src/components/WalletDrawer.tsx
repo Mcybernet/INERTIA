@@ -33,7 +33,7 @@ function tone(value: number | bigint | null): string {
   const positive = typeof value === "bigint" ? value > 0n : value > 0;
   const negative = typeof value === "bigint" ? value < 0n : value < 0;
   if (negative) return "text-down";
-  if (positive) return "text-gold";
+  if (positive) return "text-up";
   return "text-muted";
 }
 
