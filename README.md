@@ -241,7 +241,11 @@ npx serve out    # buka http://localhost:3000/INERTIA/
   dengan jumlah swap bersih.
 - Riwayat dibaca satu transaksi per satu dengan jeda ±1,2 detik (batas RPC
   publik Devnet), dirender bertahap (tabel & chart tumbuh, progres `n/total`),
-  lalu di-cache di `localStorage` agar kunjungan berikutnya instan.
+  lalu di-cache di `localStorage` agar kunjungan berikutnya instan. Selain 40
+  signature terbaru + seed, transaksi lama di-backfill 20 per kunjungan saat
+  browser idle. Cursor backfill disimpan di `inrt:backfill:v5:<mint>` dan berhenti
+  setelah menyentuh seed. Ini menjaga 1D/1W tidak jadi garis datar saat
+  window 40 transaksi bergulir menjauh dari launch.
 - `basePath` ditentukan dari fase build: `next build` selalu `/INERTIA`
   (GitHub Pages project site), `next dev` di root. Deploy script menolak push
   bila aset tidak berprefix.
@@ -255,6 +259,11 @@ npx serve out    # buka http://localhost:3000/INERTIA/
   persen perubahan candle berjalan (`close` vs `open`) pada timeframe aktif,
   sama dengan Δ di legend, tanpa label periode. Legend OHLC mengikuti crosshair
   dan menampilkan persen perubahan candle tersebut (close vs previous close).
+  Tombol `1H`/`1Mgg` (EN: `1D`/`1W`) tersedia sejak awal tetapi baru aktif
+  setelah riwayat mencapai 7 dan 28 hari; sebelum itu tooltip menampilkan
+  kekurangan hari. Untuk pool v5 (launch 18 Nov 2026 04:30 WIB), ambangnya
+  jatuh pada 25 Nov dan 16 Des 2026. Bucket tanpa transaksi tetap digambar flat
+  tetapi berwarna abu dan diberi keterangan `tanpa transaksi` di legend.
 - Tabel aktivitas di `/activity` memakai pagination 10 baris per halaman, jadi
   hanya 10 baris DOM yang dirender meskipun riwayatnya panjang.
 - `getTokenLargestAccounts` dilewati di RPC publik (selalu 429); tabel holder

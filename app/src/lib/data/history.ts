@@ -17,17 +17,40 @@ const MAX_ATTEMPTS = 3;
 const TTL_MS = 30_000;
 const FRESH_STORAGE_MS = 3 * 60_000;
 const STALE_MS = 6 * 60 * 60_000;
-const MAX_EVENTS = 600;
+const MAX_EVENTS = 2_500;
 const MAX_FETCH = 40;
+/**
+ * Riwayat lama diambil bertahap, satu batch per kunjungan. Tanpa ini chart
+ * hanya punya 40 tx terbaru + seed, sehingga 1D/1W jadi garis datar panjang.
+ */
+const BACKFILL_BATCH = 20;
+const MAX_BACKFILL_TX = 1_000;
 // Key per mint: saat cutover ke pool v5, riwayat generasi lama tidak tercampur.
 const STORAGE_KEY = `inrt:history:v5:${MINT.toBase58()}`;
 const LAUNCH_KEY = `inrt:launch:v1:${MINT.toBase58()}`;
+const BACKFILL_KEY = `inrt:backfill:v5:${MINT.toBase58()}`;
 /** Hasil negatif (tidak ada seed) dicoba ulang setelah 1 jam. */
 const LAUNCH_RETRY_MS = 60 * 60_000;
+
+type BackfillState = {
+  /** Signature paling tua yang sudah diproses. */
+  cursor: string;
+  done: boolean;
+  fetched: number;
+  at: number;
+};
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: () => void,
+    options?: { timeout?: number },
+  ) => number;
+};
 
 let cache: Cache | null = null;
 let lastGood: Cache | null = null;
 let pending: Promise<HistoryEvent[]> | null = null;
+let backfillPending = false;
 
 let launchMemory: SeedEvent | null = null;
 let launchResolved = false;
@@ -140,6 +163,30 @@ function writeLaunch(event: SeedEvent | null) {
   }
 }
 
+function readBackfill(): BackfillState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(BACKFILL_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as BackfillState;
+    if (!parsed || typeof parsed.cursor !== "string" || typeof parsed.done !== "boolean") {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeBackfill(state: BackfillState) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(BACKFILL_KEY, JSON.stringify(state));
+  } catch {
+    /* storage penuh/private mode — abaikan */
+  }
+}
+
 /**
  * Seed/launch biasanya sudah keluar dari 40 signature terbaru. Ambil sekali
  * dari signature paling tua, lalu simpan di localStorage supaya chart tetap
@@ -241,6 +288,123 @@ async function fetchOne(sig: SigInfo, attempt = 1): Promise<RawTx | null> {
   }
 }
 
+/**
+ * Ambil satu batch transaksi yang lebih tua dari cursor. Dijalankan saat idle,
+ * bukan di jalur fetch utama, supaya cold start tetap cepat. Hasilnya ditulis
+ * ke cache yang sama; polling berikutnya otomatis memakai riwayat yang lebih
+ * dalam tanpa permintaan RPC tambahan.
+ */
+async function runBackfill(
+  signatures: SigInfo[],
+  launch: SeedEvent | null,
+): Promise<void> {
+  if (backfillPending || typeof window === "undefined") return;
+  const saved = readBackfill();
+  if (saved?.done) return;
+
+  const cursor = saved?.cursor ?? signatures[signatures.length - 1]?.signature;
+  if (!cursor) return;
+
+  backfillPending = true;
+  try {
+    const connection = getConnection();
+    const pdas = derivePdas(MINT);
+    const batch = await connection.getSignaturesForAddress(
+      pdas.pool,
+      { limit: BACKFILL_BATCH, before: cursor },
+      "confirmed",
+    );
+
+    if (batch.length === 0) {
+      writeBackfill({
+        cursor,
+        done: true,
+        fetched: saved?.fetched ?? 0,
+        at: Date.now(),
+      });
+      return;
+    }
+
+    const valid: SigInfo[] = batch
+      .filter((sig) => !sig.err)
+      .map((sig) => ({
+        signature: sig.signature,
+        slot: sig.slot,
+        blockTime: sig.blockTime,
+      }));
+
+    const collected: HistoryEvent[] = [];
+    let failures = 0;
+    for (let index = 0; index < valid.length; index += 1) {
+      const target = valid[index]!;
+      try {
+        const raw = await fetchOne(target);
+        if (raw) collected.push(...extractEvents([raw]));
+      } catch {
+        failures += 1;
+      }
+      // Tampilkan progres agar backfill terlihat sedang berjalan.
+      if (collected.length > 0) {
+        emit(withLaunch(dedupeSort(collected), launch), {
+          done: index + 1,
+          total: valid.length,
+        });
+      }
+      if (index < valid.length - 1) await sleep(TX_GAP_MS);
+    }
+
+    const base = lastGood ?? cache;
+    if (base && collected.length > 0) {
+      const merged = withLaunch(
+        dedupeSort([...base.events, ...collected]),
+        launch,
+      );
+      const sigs = [
+        ...new Set([...(base.sigs ?? []), ...batch.map((sig) => sig.signature)]),
+      ].slice(0, MAX_EVENTS);
+      const entry: Cache = { at: base.at, events: merged, sigs };
+      cache = entry;
+      lastGood = entry;
+      writeStorage(entry);
+      emit(merged, { done: valid.length, total: valid.length });
+    }
+
+    const reachedLaunch = Boolean(
+      launch && batch.some((sig) => sig.signature === launch.sig),
+    );
+    const exhausted = batch.length < BACKFILL_BATCH;
+    const fetched = (saved?.fetched ?? 0) + valid.length;
+    writeBackfill({
+      cursor: batch[batch.length - 1]!.signature,
+      done:
+        reachedLaunch ||
+        exhausted ||
+        failures === valid.length ||
+        fetched >= MAX_BACKFILL_TX,
+      fetched,
+      at: Date.now(),
+    });
+  } catch {
+    // Backfill opsional. Cursor sengaja tidak diubah supaya dicoba lagi.
+    // Pastikan indikator progres tidak nyangkut di nilai sebagian.
+    emit(lastGood?.events ?? [], { done: 1, total: 1 });
+  } finally {
+    backfillPending = false;
+  }
+}
+
+function scheduleBackfill(signatures: SigInfo[], launch: SeedEvent | null) {
+  if (backfillPending || typeof window === "undefined") return;
+  if (readBackfill()?.done) return;
+  const run = () => void runBackfill(signatures, launch);
+  const win = window as IdleWindow;
+  if (typeof win.requestIdleCallback === "function") {
+    win.requestIdleCallback(run, { timeout: 3_000 });
+  } else {
+    window.setTimeout(run, 1_500);
+  }
+}
+
 export function loadHistory(
   limit = 100,
   force = false,
@@ -336,6 +500,7 @@ async function runHistory(
     cache = entry;
     lastGood = entry;
     writeStorage(entry);
+    scheduleBackfill(signatures, launch);
     return events;
   }
 
@@ -385,5 +550,6 @@ async function runHistory(
   lastGood = result;
   writeStorage(result);
   emit(merged, { done: targets.length, total: targets.length });
+  scheduleBackfill(signatures, launch);
   return merged;
 }

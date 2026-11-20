@@ -35,6 +35,8 @@ import { useI18n } from "./LanguageProvider";
 
 const UP = "#4FA57A";
 const DOWN = "#C76A6A";
+/** Bucket tanpa transaksi sengaja diredupkan supaya tidak disangka harga diam. */
+const FLAT = "#3A3A44";
 
 type IdleWindow = Window & {
   requestIdleCallback?: (
@@ -389,14 +391,18 @@ export default function PriceChart({
         high: candle.high,
         low: candle.low,
         close: candle.close,
+        ...(candle.synthetic
+          ? { color: FLAT, wickColor: FLAT, borderColor: FLAT }
+          : {}),
       })),
     );
     volumeRef.current.setData(
       candles.map((candle) => ({
         time: candle.time as UTCTimestamp,
         value: candle.volume,
-        color:
-          candle.close >= candle.open
+        color: candle.synthetic
+          ? "rgba(90,90,102,0.25)"
+          : candle.close >= candle.open
             ? "rgba(79,165,122,0.35)"
             : "rgba(199,106,106,0.35)",
       })),
@@ -596,9 +602,11 @@ export default function PriceChart({
             </span>
           </span>
           <span className="text-[9px] uppercase tracking-label text-dim">
-            {shown.trades > 0
-              ? t("{n} trade", { n: shown.trades })
-              : t("belum ada trade")}
+            {shown.synthetic
+              ? t("tanpa transaksi")
+              : shown.trades > 0
+                ? t("{n} trade", { n: shown.trades })
+                : t("belum ada trade")}
             {shown.mass > 0 ? ` · ${shown.mass} mass` : ""}
             {shown.launch ? " · launch" : ""}
           </span>
@@ -634,7 +642,7 @@ export default function PriceChart({
       </div>
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-        <span title={t("Bucket tanpa transaksi tetap digambar sebagai candle flat")}>
+        <span title={t("Candle abu = tanpa transaksi")}>
           {t("Waktu WIB · {n} candle · {m} flat", {
             n: candles.length,
             m: candles.filter((candle) => candle.synthetic).length,

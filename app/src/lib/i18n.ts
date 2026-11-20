@@ -95,8 +95,8 @@ const EN: Record<string, string> = {
     "No candles yet · the first swap will appear here",
   "Memuat candle…": "Loading candles…",
   "Menyiapkan candle…": "Preparing candles…",
-  "Bucket tanpa transaksi tetap digambar sebagai candle flat":
-    "Buckets without trades are still drawn as flat candles",
+  "tanpa transaksi": "no transactions",
+  "Candle abu = tanpa transaksi": "Gray candles = no transactions",
   "Waktu WIB · {n} candle · {m} flat": "WIB time · {n} candles · {m} flat",
   "Memuat riwayat {done}/{total} tx": "Loading history {done}/{total} tx",
   "Fee 0,30% tidak masuk reserve · k naik tipis":
