@@ -72,6 +72,14 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        navIn: {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(0)" },
+        },
+        navOut: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-100%)" },
+        },
       },
       animation: {
         pulseSoft: "pulseSoft 1.6s ease-in-out infinite",
@@ -80,6 +88,8 @@ const config: Config = {
         drawerIn: "drawerIn 240ms ease-out both",
         drawerOut: "drawerOut 180ms ease-in both",
         riseIn: "riseIn 260ms ease-out both",
+        navIn: "navIn 240ms ease-out both",
+        navOut: "navOut 180ms ease-in both",
       },
     },
   },

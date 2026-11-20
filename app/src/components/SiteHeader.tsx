@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -51,44 +51,61 @@ export function SiteHeader() {
   const { lang, t } = useI18n();
   const { publicKey } = useWallet();
   const [open, setOpen] = useState(false);
+  const [navClosing, setNavClosing] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
+  const navClosingRef = useRef(false);
+  const navTimerRef = useRef<number | null>(null);
   const closeWallet = useCallback(() => setWalletOpen(false), []);
+
+  const requestCloseNav = useCallback(() => {
+    if (navClosingRef.current) return;
+    navClosingRef.current = true;
+    setNavClosing(true);
+    navTimerRef.current = window.setTimeout(() => {
+      setOpen(false);
+      setNavClosing(false);
+      navClosingRef.current = false;
+    }, 180);
+  }, []);
+
+  const toggleNav = useCallback(() => {
+    if (open) requestCloseNav();
+    else setOpen(true);
+  }, [open, requestCloseNav]);
 
   useEffect(() => {
     setOpen(false);
+    setNavClosing(false);
+    navClosingRef.current = false;
     setWalletOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    return () => {
+      if (navTimerRef.current !== null) window.clearTimeout(navTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        requestCloseNav();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open, requestCloseNav]);
+
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ink">
-      <div className="mx-auto flex h-14 max-w-[1480px] items-center gap-2 px-4 lg:gap-3 lg:px-6">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? t("Tutup navigasi") : t("Buka navigasi")}
-          aria-expanded={open}
-          aria-controls="nav-mobile"
-          className="btn btn-ghost h-[34px] w-[34px] shrink-0 px-0 lg:hidden"
-        >
-          <span className="relative block h-4 w-4" aria-hidden>
-            <span
-              className={`absolute left-0 top-[3px] block h-px w-4 bg-current motion-safe:transition-transform motion-safe:duration-200 ${
-                open ? "translate-y-[4px] rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`absolute left-0 top-[7px] block h-px w-4 bg-current motion-safe:transition-opacity motion-safe:duration-150 ${
-                open ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`absolute left-0 top-[11px] block h-px w-4 bg-current motion-safe:transition-transform motion-safe:duration-200 ${
-                open ? "-translate-y-[4px] -rotate-45" : ""
-              }`}
-            />
-          </span>
-        </button>
-
+      <div className="mx-auto flex h-14 max-w-[1480px] items-center gap-3 px-4 lg:px-6">
         <Link
           href="/"
           className="flex shrink-0 items-center gap-2.5"
@@ -201,51 +218,79 @@ export function SiteHeader() {
           </button>
 
           <WalletMultiButton />
+
+          <button
+            type="button"
+            onClick={toggleNav}
+            aria-label={open ? t("Tutup navigasi") : t("Buka navigasi")}
+            aria-expanded={open}
+            aria-controls="nav-mobile"
+            className="btn btn-ghost h-[34px] px-2.5 lg:hidden"
+          >
+            <span aria-hidden>{open ? "✕" : "☰"}</span>
+          </button>
         </div>
       </div>
 
       {open ? (
-        <nav
-          id="nav-mobile"
-          aria-label={t("Navigasi utama mobile")}
-          className="border-t border-line bg-ink-1 motion-safe:animate-riseIn lg:hidden"
-        >
-          <ul className="grid grid-cols-2 gap-px bg-line">
-            {NAV.map((item) => {
-              const isActive =
-                item.href === "/" ? active === "/" : active === item.href;
-              return (
-                <li key={item.href} className="bg-ink-1">
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`flex h-11 items-center justify-between px-4 text-[10px] uppercase tracking-label ${
-                      isActive ? "text-gold" : "text-muted"
-                    }`}
-                  >
-                    {item.label}
-                    <span className="mono text-[9px] text-dim">
-                      {item.short}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
-            <span>{t("Solana Devnet · tanpa bonding curve")}</span>
-            <span className="mono">{t("fee 0,30% → massa")}</span>
-            <LangSwitch className="flex h-7 sm:hidden" />
-            <button
-              type="button"
-              onClick={() => void refreshAll()}
-              disabled={refreshing}
-              className="chip py-1 normal-case tracking-normal"
-            >
-              {refreshing ? t("Memuat…") : t("Muat ulang data")}
-            </button>
-          </div>
-        </nav>
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <button
+            type="button"
+            aria-label={t("Tutup navigasi")}
+            onClick={requestCloseNav}
+            className={`absolute inset-0 bg-ink/80 ${
+              navClosing
+                ? "motion-safe:animate-fadeOut"
+                : "motion-safe:animate-fadeIn"
+            }`}
+          />
+
+          <nav
+            id="nav-mobile"
+            aria-label={t("Navigasi utama mobile")}
+            className={`absolute left-0 top-0 flex h-full w-1/2 flex-col overflow-y-auto border-r border-line bg-ink-1 ${
+              navClosing
+                ? "motion-safe:animate-navOut"
+                : "motion-safe:animate-navIn"
+            }`}
+          >
+            <ul className="grid grid-cols-1 gap-px bg-line">
+              {NAV.map((item) => {
+                const isActive =
+                  item.href === "/" ? active === "/" : active === item.href;
+                return (
+                  <li key={item.href} className="bg-ink-1">
+                    <Link
+                      href={item.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`flex h-11 items-center justify-between px-4 text-[10px] uppercase tracking-label ${
+                        isActive ? "text-gold" : "text-muted"
+                      }`}
+                    >
+                      {item.label}
+                      <span className="mono text-[9px] text-dim">
+                        {item.short}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="mt-auto flex flex-col gap-2 border-t border-line px-4 py-3 text-[9px] uppercase tracking-label text-dim">
+              <span>{t("Solana Devnet · tanpa bonding curve")}</span>
+              <span className="mono">{t("fee 0,30% → massa")}</span>
+              <LangSwitch className="flex h-7" />
+              <button
+                type="button"
+                onClick={() => void refreshAll()}
+                disabled={refreshing}
+                className="chip py-1 normal-case tracking-normal"
+              >
+                {refreshing ? t("Memuat…") : t("Muat ulang data")}
+              </button>
+            </div>
+          </nav>
+        </div>
       ) : null}
 
       {walletOpen ? <WalletDrawer onClose={closeWallet} /> : null}
