@@ -259,11 +259,10 @@ npx serve out    # buka http://localhost:3000/INERTIA/
   persen perubahan candle berjalan (`close` vs `open`) pada timeframe aktif,
   sama dengan Δ di legend, tanpa label periode. Legend OHLC mengikuti crosshair
   dan menampilkan persen perubahan candle tersebut (close vs previous close).
-  Tombol `1H`/`1Mgg` (EN: `1D`/`1W`) tersedia sejak awal tetapi baru aktif
-  setelah riwayat mencapai 7 dan 28 hari; sebelum itu tooltip menampilkan
-  kekurangan hari. Untuk pool v5 (launch 18 Nov 2026 04:30 WIB), ambangnya
-  jatuh pada 25 Nov dan 16 Des 2026. Bucket tanpa transaksi tetap digambar flat
-  tetapi berwarna abu dan diberi keterangan `tanpa transaksi` di legend.
+  Tombol `1H`/`1Mgg` (EN: `1D`/`1W`) aktif sejak awal dan menampilkan sejauh mana
+  riwayat yang tersedia; tidak ada penguncian berbasis umur pool. Bucket tanpa
+  transaksi tetap digambar flat tetapi berwarna abu dan diberi keterangan
+  `tanpa transaksi` di legend.
 - Tabel aktivitas di `/activity` memakai pagination 10 baris per halaman, jadi
   hanya 10 baris DOM yang dirender meskipun riwayatnya panjang.
 - `getTokenLargestAccounts` dilewati di RPC publik (selalu 429); tabel holder

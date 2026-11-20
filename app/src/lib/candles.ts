@@ -17,8 +17,8 @@ export const TIMEFRAMES = [
   { label: "15M", seconds: 900, axis: "time", minSpan: 0 },
   { label: "1J", seconds: 3600, axis: "time", minSpan: 0 },
   { label: "4J", seconds: 14_400, axis: "time", minSpan: 0 },
-  { label: "1H", seconds: 86_400, axis: "day", minSpan: 7 * 86_400 },
-  { label: "1Mgg", seconds: 604_800, axis: "week", minSpan: 28 * 86_400 },
+  { label: "1H", seconds: 86_400, axis: "day", minSpan: 0 },
+  { label: "1Mgg", seconds: 604_800, axis: "week", minSpan: 0 },
 ] as const;
 
 export type Timeframe = (typeof TIMEFRAMES)[number];
