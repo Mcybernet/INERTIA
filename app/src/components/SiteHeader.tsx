@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { NAV } from "@/lib/nav";
 import { shortAddr } from "@/lib/format";
 import { POOL_LABEL } from "@/lib/constants";
 import { useData } from "./DataProvider";
 import { useI18n } from "./LanguageProvider";
+import { WalletDrawer } from "./WalletDrawer";
 
 /** `usePathname()` bisa menyertakan basePath GitHub Pages. */
 function normalize(pathname: string): string {
@@ -21,10 +23,14 @@ export function SiteHeader() {
   const active = normalize(pathname ?? "/");
   const { pool, refreshing, refreshAll } = useData();
   const { lang, setLang, t } = useI18n();
+  const { publicKey } = useWallet();
   const [open, setOpen] = useState(false);
+  const [walletOpen, setWalletOpen] = useState(false);
+  const closeWallet = useCallback(() => setWalletOpen(false), []);
 
   useEffect(() => {
     setOpen(false);
+    setWalletOpen(false);
   }, [pathname]);
 
   return (
@@ -137,6 +143,18 @@ export function SiteHeader() {
             <span className={refreshing ? "animate-pulseSoft" : ""}>↻</span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => setWalletOpen(true)}
+            aria-label={t("Buka dompet")}
+            title={
+              publicKey ? `${t("Dompet")} ${shortAddr(publicKey.toBase58(), 4)}` : t("Buka dompet")
+            }
+            className="btn btn-ghost h-[34px] px-2.5"
+          >
+            {t("Dompet")}
+          </button>
+
           <WalletMultiButton />
 
           <button
@@ -194,6 +212,8 @@ export function SiteHeader() {
           </div>
         </nav>
       ) : null}
+
+      {walletOpen ? <WalletDrawer onClose={closeWallet} /> : null}
     </header>
   );
 }

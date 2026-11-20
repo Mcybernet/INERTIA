@@ -587,6 +587,36 @@ const EN: Record<string, string> = {
   "9.600.000 INRT": "9,600,000 INRT",
   "9.600.000": "9,600,000",
   "0,000005": "0.000005",
+
+  // Dompet
+  "Dompet": "Wallet",
+  "Dompet INERTIA": "INERTIA wallet",
+  "Buka dompet": "Open wallet",
+  "Tutup dompet": "Close wallet",
+  "Hubungkan wallet untuk melihat portofolio":
+    "Connect a wallet to view your portfolio",
+  "Kunci tetap di wallet kamu. Situs ini tidak menyimpannya.":
+    "Keys stay in your wallet. This site does not store them.",
+  "Alamat wallet": "Wallet address",
+  "Salin alamat": "Copy address",
+  "Lihat di Explorer": "View in Explorer",
+  "Putuskan": "Disconnect",
+  "Nilai portofolio": "Portfolio value",
+  "Modal": "Cost",
+  "Harga beli rata-rata": "Average buy price",
+  "Harga sekarang": "Current price",
+  "Jumlah swap": "Swap count",
+  "Realisasi": "Realized",
+  "Belum realisasi": "Unrealized",
+  "Termasuk fee 0,30%": "Includes 0.30% fee",
+  "Berdasarkan {n} swap terakhir": "Based on the last {n} swaps",
+  "Memuat data on-chain": "Loading on-chain data",
+  "Ada transfer di luar swap, angka P/L perkiraan":
+    "Transfers outside swaps detected, P/L figures are approximate",
+  "Token": "Token",
+  "Belum ada swap dari wallet ini.": "No swaps from this wallet yet.",
+  "Harga eksekusi": "Execution price",
+  "Lihat semua aktivitas": "View all activity",
 };
 
 function applyVars(text: string, vars?: Vars): string {

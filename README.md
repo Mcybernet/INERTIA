@@ -233,6 +233,12 @@ npx serve out    # buka http://localhost:3000/INERTIA/
 - Situs statis: data pool/riwayat/holder dibaca langsung dari RPC Devnet di
   browser (tanpa API route), transaksi `swap` ditandatangani wallet pengguna.
 - Satu `DataProvider` di root layout: pindah halaman tidak memicu ulang polling.
+- Tombol **Dompet** di header membuka drawer tanpa menambah route. Isinya: alamat,
+  saldo, aktivitas wallet, dan P/L per portofolio. Modal dihitung dari event swap
+  dengan lot FIFO, `sol_user` buy sudah termasuk fee dan sell sudah setelah fee.
+  Token dari transfer atau alokasi tidak diberi modal, jadi tidak menggelembungkan
+  persentase. Angka memakai `BigInt` dan diberi catatan bila saldo ATA tidak cocok
+  dengan jumlah swap bersih.
 - Riwayat dibaca satu transaksi per satu dengan jeda ±1,2 detik (batas RPC
   publik Devnet), dirender bertahap (tabel & chart tumbuh, progres `n/total`),
   lalu di-cache di `localStorage` agar kunjungan berikutnya instan.
