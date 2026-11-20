@@ -33,7 +33,7 @@ export function HoldersTable({
               {["#", "Owner", "INRT", "% Supply"].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-2 text-[9px] font-normal uppercase tracking-label text-dim"
+                  className="px-3 py-2 text-[9px] font-normal uppercase tracking-label text-dim sm:px-4"
                 >
                   {t(h)}
                 </th>
@@ -56,10 +56,10 @@ export function HoldersTable({
                     key={row.tokenAccount}
                     className="border-b border-lineSoft last:border-0"
                   >
-                    <td className="mono px-4 py-2.5 text-[11px] text-dim">
+                    <td className="mono px-3 py-2.5 sm:px-4 text-[11px] text-dim">
                       {String(index + 1).padStart(2, "0")}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-3 py-2.5 sm:px-4">
                       <div className="flex items-center gap-2">
                         <a
                           href={`https://explorer.solana.com/address/${row.owner}?cluster=devnet`}
@@ -83,10 +83,10 @@ export function HoldersTable({
                         ) : null}
                       </div>
                     </td>
-                    <td className="mono px-4 py-2.5 text-[11px] text-fg">
+                    <td className="mono px-3 py-2.5 sm:px-4 text-[11px] text-fg">
                       {fmtToken(row.amount, 2)}
                     </td>
-                    <td className="mono px-4 py-2.5 text-[11px] text-muted">
+                    <td className="mono px-3 py-2.5 sm:px-4 text-[11px] text-muted">
                       {fmtPct(row.pctBps)}
                     </td>
                   </tr>

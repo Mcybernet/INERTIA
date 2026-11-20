@@ -18,11 +18,37 @@ function normalize(pathname: string): string {
   return clean.replace(/\/+$/, "") || "/";
 }
 
+/** Switcher bahasa dipakai di header desktop dan di menu mobile. */
+function LangSwitch({ className }: { className: string }) {
+  const { lang, setLang, t } = useI18n();
+  return (
+    <div
+      role="group"
+      aria-label={t("Ganti bahasa")}
+      className={`items-stretch border border-line ${className}`}
+    >
+      {(["id", "en"] as const).map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => setLang(code)}
+          aria-pressed={lang === code}
+          className={`px-1.5 text-[9px] uppercase tracking-label transition-colors ${
+            lang === code ? "bg-gold/10 text-gold" : "text-dim hover:text-fg"
+          }`}
+        >
+          {code}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const active = normalize(pathname ?? "/");
   const { pool, refreshing, refreshAll } = useData();
-  const { lang, setLang, t } = useI18n();
+  const { lang, t } = useI18n();
   const { publicKey } = useWallet();
   const [open, setOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -110,27 +136,7 @@ export function SiteHeader() {
               : "SYNC"}
           </span>
 
-          <div
-            role="group"
-            aria-label={t("Ganti bahasa")}
-            className="flex h-[34px] items-stretch border border-line"
-          >
-            {(["id", "en"] as const).map((code) => (
-              <button
-                key={code}
-                type="button"
-                onClick={() => setLang(code)}
-                aria-pressed={lang === code}
-                className={`px-1.5 text-[9px] uppercase tracking-label transition-colors ${
-                  lang === code
-                    ? "bg-gold/10 text-gold"
-                    : "text-dim hover:text-fg"
-                }`}
-              >
-                {code}
-              </button>
-            ))}
-          </div>
+          <LangSwitch className="hidden h-[34px] sm:flex" />
 
           <button
             type="button"
@@ -201,6 +207,7 @@ export function SiteHeader() {
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-2 text-[9px] uppercase tracking-label text-dim">
             <span>{t("Solana Devnet · tanpa bonding curve")}</span>
             <span className="mono">{t("fee 0,30% → massa")}</span>
+            <LangSwitch className="flex h-7 sm:hidden" />
             <button
               type="button"
               onClick={() => void refreshAll()}

@@ -29,6 +29,16 @@ function badge(kind: HistoryEvent["kind"]) {
   }
 }
 
+/** Satu metrik di kartu mobile: tabel 6 kolom tidak muat di layar 360px. */
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[9px] uppercase tracking-label text-dim">{label}</p>
+      <p className="mono mt-1 truncate text-[11px] text-fg">{value}</p>
+    </div>
+  );
+}
+
 export function ActivityTable({
   events,
   loading,
@@ -126,7 +136,7 @@ export function ActivityTable({
       />
 
       <div className={scroll ? "max-h-[420px] overflow-auto" : "overflow-x-auto"}>
-        <table className="w-full border-collapse text-left">
+        <table className="hidden w-full border-collapse text-left sm:table">
           <thead className="sticky top-0 z-10 bg-ink-1">
             <tr className="border-b border-line">
               {["Waktu", "Tipe", "INRT", "SOL", "Harga", "Wallet"].map((h) => (
@@ -216,6 +226,80 @@ export function ActivityTable({
                 })}
           </tbody>
         </table>
+
+        <div className="divide-y divide-lineSoft sm:hidden">
+          {loading && list.length === 0
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-2 px-4 py-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))
+            : shown.map((event) => {
+                const b = badge(event.kind);
+                const wallet =
+                  event.kind === "seed"
+                    ? EMPTY
+                    : event.kind === "mass"
+                      ? event.caller
+                      : event.wallet;
+                const solAmount =
+                  event.kind === "buy" || event.kind === "sell"
+                    ? event.solUser
+                    : event.solAmount;
+                return (
+                  <article key={`${event.sig}-${event.kind}-${event.timestamp}`} className="px-4 py-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <a
+                          href={`https://explorer.solana.com/tx/${event.sig}?cluster=devnet`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mono shrink-0 text-[11px] text-muted hover:text-gold"
+                          title={event.sig}
+                        >
+                          {fmtTime(event.timestamp)}
+                        </a>
+                        <span
+                          className={`shrink-0 border px-1.5 py-0.5 text-[9px] tracking-label ${b.cls}`}
+                        >
+                          {t(b.label)}
+                        </span>
+                      </div>
+                      {wallet === EMPTY ? (
+                        <span className="mono shrink-0 text-[9px] text-dim">
+                          {EMPTY}
+                        </span>
+                      ) : (
+                        <a
+                          href={`https://explorer.solana.com/address/${wallet}?cluster=devnet`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mono shrink-0 text-[9px] text-dim hover:text-gold"
+                        >
+                          {wallet.slice(0, 4)}…{wallet.slice(-4)}
+                        </a>
+                      )}
+                    </div>
+                    <div className="mt-2.5 grid grid-cols-3 gap-3">
+                      <Metric label={t("INRT")} value={fmtToken(event.tokenAmount, 2)} />
+                      <Metric
+                        label={t("SOL")}
+                        value={fmtSolNumber(Number(BigInt(solAmount)) / 1e9, true)}
+                      />
+                      <Metric
+                        label={t("Harga")}
+                        value={fmtSolNumber(
+                          Number(BigInt(event.priceAfter)) / 1e15,
+                          true,
+                        )}
+                      />
+                    </div>
+                  </article>
+                );
+              })}
+        </div>
+
         {!loading && list.length === 0 ? <Empty text={t(emptyText)} /> : null}
       </div>
 
