@@ -52,9 +52,34 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.35" },
         },
+        fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        fadeOut: {
+          from: { opacity: "1" },
+          to: { opacity: "0" },
+        },
+        drawerIn: {
+          from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(0)" },
+        },
+        drawerOut: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(100%)" },
+        },
+        riseIn: {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         pulseSoft: "pulseSoft 1.6s ease-in-out infinite",
+        fadeIn: "fadeIn 220ms ease-out both",
+        fadeOut: "fadeOut 180ms ease-in both",
+        drawerIn: "drawerIn 240ms ease-out both",
+        drawerOut: "drawerOut 180ms ease-in both",
+        riseIn: "riseIn 260ms ease-out both",
       },
     },
   },
