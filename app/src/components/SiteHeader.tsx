@@ -156,9 +156,21 @@ export function SiteHeader() {
             title={
               publicKey ? `${t("Dompet")} ${shortAddr(publicKey.toBase58(), 4)}` : t("Buka dompet")
             }
-            className="btn btn-ghost h-[34px] px-2.5"
+            className="btn btn-ghost h-[34px] px-2 sm:px-2.5"
           >
-            {t("Dompet")}
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.3"
+              aria-hidden="true"
+              className="h-4 w-4 sm:hidden"
+            >
+              <path d="M2.5 6.5h13a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z" />
+              <path d="M2.5 6.5v-2h10" />
+              <path d="M12.5 11.5h5" />
+            </svg>
+            <span className="hidden sm:inline">{t("Dompet")}</span>
           </button>
 
           <WalletMultiButton />
